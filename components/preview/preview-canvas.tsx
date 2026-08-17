@@ -1,0 +1,168 @@
+"use client";
+
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { AlertTriangle, Maximize2, Minus, Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { PAGE_SIZES, mmToPx } from "@/lib/constants";
+import { useResume } from "@/lib/store/resume-store";
+import { ZOOM_MAX, ZOOM_MIN, useEditorStore } from "@/lib/store/editor-store";
+import { cn } from "@/lib/utils";
+import { ResumeDocument } from "./resume-document";
+
+/**
+ * 预览画布：负责缩放适配、溢出检测和性能观测，不负责简历内容本身。
+ *
+ * P1 阶段还没有真实分页（P2 Day 9），内容超出一页时不自动断页，
+ * 而是明确地把溢出量告诉用户——这比悄悄裁掉半页内容诚实得多。
+ */
+export function PreviewCanvas() {
+  const resume = useResume((s) => s.resume);
+  const zoom = useEditorStore((s) => s.zoom);
+  const setZoom = useEditorStore((s) => s.setZoom);
+  const zoomBy = useEditorStore((s) => s.zoomBy);
+
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const documentRef = useRef<HTMLDivElement>(null);
+  const [fitScale, setFitScale] = useState(1);
+  const [overflow, setOverflow] = useState<{ page: number; px: number }[]>([]);
+
+  const pageWidthPx = mmToPx(PAGE_SIZES[resume.metadata.page.format].width);
+  const scale = zoom ?? fitScale;
+
+  // 自适应：让整页宽度刚好塞进容器（留一点边距）
+  useLayoutEffect(() => {
+    const viewport = viewportRef.current;
+    if (!viewport) return;
+
+    const compute = () => {
+      const available = viewport.clientWidth - 48;
+      setFitScale(Math.min(1, Math.max(ZOOM_MIN, available / pageWidthPx)));
+    };
+
+    compute();
+    const observer = new ResizeObserver(compute);
+    observer.observe(viewport);
+    return () => observer.disconnect();
+  }, [pageWidthPx]);
+
+  // 溢出检测：看每一栏最后一个区块的底边有没有掉到栏的可用区域之外。
+  //
+  // 不用 scrollHeight - clientHeight：栏是 grid 里被拉伸的 flex 容器，
+  // 这两个值在不同浏览器/不同收缩行为下并不可靠（实测会恒等）。
+  // 几何比较直接回答了用户真正关心的问题：有没有东西掉到纸外面。
+  const measureOverflow = useCallback(() => {
+    const root = documentRef.current;
+    if (!root) return;
+
+    const scale = root.getBoundingClientRect().width / root.offsetWidth || 1;
+
+    const next: { page: number; px: number }[] = [];
+    root.querySelectorAll<HTMLElement>(".resume-page").forEach((page, index) => {
+      const container = page.querySelector<HTMLElement>(".resume-columns");
+      if (!container) return;
+
+      // 栏是 grid 项，内容放不下时栏自己会被撑高、连同内容一起溢出容器，
+      // 所以基准线要取容器（= 页面内容区）的底边，而不是栏自己的底边。
+      const limit = container.getBoundingClientRect().bottom;
+
+      let worst = 0;
+      page.querySelectorAll<HTMLElement>(".resume-column").forEach((column) => {
+        // getBoundingClientRect 是缩放后的像素，除回 scale 才是版面上的真实值
+        worst = Math.max(worst, (column.getBoundingClientRect().bottom - limit) / scale);
+      });
+      if (worst > 1) next.push({ page: index + 1, px: Math.round(worst) });
+    });
+
+    setOverflow((prev) =>
+      prev.length === next.length &&
+      prev.every((p, i) => p.page === next[i].page && p.px === next[i].px)
+        ? prev
+        : next,
+    );
+  }, []);
+
+  useEffect(() => {
+    // 直接量，不套 requestAnimationFrame：
+    // effect 跑的时候 DOM 已经提交，读 scrollHeight 会强制一次布局计算，拿到的就是最新值。
+    // 而 rAF 在标签页不可见时根本不触发，会让溢出提示停留在过期状态。
+    measureOverflow();
+
+    // 字体是异步加载的，换字体或首次加载完成后行高会变，必须重测一次
+    let cancelled = false;
+    void document.fonts?.ready.then(() => {
+      if (!cancelled) measureOverflow();
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [resume, measureOverflow]);
+
+  return (
+    <div className="bg-muted/40 flex h-full min-w-0 flex-col">
+      <div className="bg-background/80 flex items-center justify-between gap-2 border-b px-3 py-2 backdrop-blur">
+        <div className="flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="缩小"
+            onClick={() => zoomBy(-0.1)}
+            disabled={scale <= ZOOM_MIN}
+          >
+            <Minus className="size-4" />
+          </Button>
+          <span className="text-muted-foreground w-14 text-center text-sm tabular-nums">
+            {Math.round(scale * 100)}%
+          </span>
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="放大"
+            onClick={() => zoomBy(0.1)}
+            disabled={scale >= ZOOM_MAX}
+          >
+            <Plus className="size-4" />
+          </Button>
+          <Button variant="ghost" size="icon" aria-label="适应宽度" onClick={() => setZoom(null)}>
+            <Maximize2 className="size-4" />
+          </Button>
+        </div>
+
+        {overflow.length > 0 ? (
+          <div className="flex items-center gap-1.5 text-sm text-amber-600 dark:text-amber-500">
+            <AlertTriangle className="size-4 shrink-0" />
+            <span>
+              第 {overflow.map((o) => o.page).join("、")} 页内容超出{" "}
+              {overflow.reduce((sum, o) => sum + o.px, 0)}px
+            </span>
+          </div>
+        ) : (
+          <span className="text-muted-foreground text-sm">内容适配良好</span>
+        )}
+      </div>
+
+      <div ref={viewportRef} className="min-h-0 flex-1 overflow-auto p-6">
+        <div
+          style={{
+            width: pageWidthPx * scale,
+            margin: "0 auto",
+          }}
+        >
+          <div
+            ref={documentRef}
+            style={{
+              transform: `scale(${scale})`,
+              transformOrigin: "top left",
+              width: pageWidthPx,
+            }}
+            className={cn(
+              "[&_.resume-page]:mb-6 [&_.resume-page]:shadow-lg [&_.resume-page]:ring-1 [&_.resume-page]:ring-black/10",
+              overflow.length > 0 && "[&_.resume-page]:ring-amber-400/60",
+            )}
+          >
+            <ResumeDocument resume={resume} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

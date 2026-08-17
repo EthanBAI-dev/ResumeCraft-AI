@@ -1,0 +1,329 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-heading: var(--font-sans);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+  --radius: 0.625rem;
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.556 0 0);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+}
+
+/* ==========================================================================
+   简历文档样式
+   --------------------------------------------------------------------------
+   ADR-001：屏幕预览与 PDF 导出共用这一份 CSS，不存在第二套渲染。
+   因此这里刻意不用任何 Tailwind 的主题变量 —— 简历是"纸"，
+   不能跟着应用的暗色模式变色，也不能依赖只在应用里存在的 token。
+   ========================================================================== */
+
+.resume-root {
+  color-scheme: light;
+  background: var(--r-bg);
+  color: var(--r-text);
+  font-family: var(--r-font-family), "Noto Sans SC", "Microsoft YaHei", sans-serif;
+  font-size: var(--r-font-size);
+  line-height: var(--r-line-height);
+  -webkit-font-smoothing: antialiased;
+}
+
+.resume-page {
+  position: relative;
+  width: var(--r-page-width);
+  height: var(--r-page-height);
+  padding: var(--r-margin);
+  background: var(--r-bg);
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.resume-columns {
+  display: grid;
+  grid-template-columns: var(--r-column-template);
+  gap: calc(var(--r-section-gap) * 1.6);
+  height: 100%;
+}
+
+.resume-column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-section-gap);
+  min-width: 0;
+}
+
+.resume-section {
+  break-inside: avoid;
+  /* 关键：flex 子项默认 flex-shrink:1，内容超出一页时会被悄悄压扁，
+     既破坏排版（行距被挤没），又让溢出检测永远量不到（scrollHeight == clientHeight）。
+     禁止收缩后，超出就是真的溢出，能被量出来也能提示用户。 */
+  flex: 0 0 auto;
+}
+
+.resume-section__title {
+  font-weight: 700;
+  color: var(--r-primary);
+  letter-spacing: 0.02em;
+  margin-bottom: calc(var(--r-item-gap) * 0.75);
+}
+
+.resume-items {
+  display: flex;
+  flex-direction: column;
+  gap: var(--r-item-gap);
+}
+
+.resume-item {
+  break-inside: avoid;
+}
+
+.resume-item__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.75em;
+}
+
+.resume-item__title {
+  font-weight: 600;
+}
+
+.resume-item__meta,
+.resume-muted {
+  color: var(--r-muted);
+  font-size: 0.92em;
+}
+
+.resume-highlights {
+  margin: calc(var(--r-item-gap) * 0.4) 0 0;
+  padding-left: 1.15em;
+  list-style: disc;
+}
+
+.resume-highlights > li {
+  margin-bottom: calc(var(--r-item-gap) * 0.25);
+  /* 中文简历里 bullet 很容易在页尾只留一行，孤行控制交给浏览器 */
+  orphans: 2;
+  widows: 2;
+}
+
+.resume-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35em;
+  margin-top: calc(var(--r-item-gap) * 0.4);
+}
+
+.resume-tag {
+  border: 1px solid color-mix(in oklab, var(--r-primary) 35%, transparent);
+  color: var(--r-primary);
+  border-radius: 3px;
+  padding: 0.05em 0.45em;
+  font-size: 0.85em;
+  line-height: 1.5;
+}
+
+.resume-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* --- 模板：Modern（主色标题 + 左侧色条） ------------------------------- */
+.tpl-modern .resume-section__title {
+  border-left: 3px solid var(--r-primary);
+  padding-left: 0.5em;
+  font-size: 1.06em;
+}
+.tpl-modern .resume-basics__name {
+  font-size: 1.9em;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+/* --- 模板：Classic（居中标题 + 全宽下划线，最接近传统中文简历） ------- */
+.tpl-classic .resume-section__title {
+  border-bottom: 1.5px solid var(--r-primary);
+  padding-bottom: 0.2em;
+  font-size: 1.04em;
+  text-align: left;
+}
+.tpl-classic .resume-basics {
+  text-align: center;
+}
+.tpl-classic .resume-basics__name {
+  font-size: 2em;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+.tpl-classic .resume-basics__contacts {
+  justify-content: center;
+}
+
+/* --- 模板：Minimal（无装饰，全靠字重与留白，ATS 最友好） --------------- */
+.tpl-minimal .resume-section__title {
+  font-size: 0.86em;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--r-muted);
+  font-weight: 600;
+}
+.tpl-minimal .resume-basics__name {
+  font-size: 1.7em;
+  font-weight: 600;
+}
+.tpl-minimal .resume-tag {
+  border: none;
+  padding: 0;
+  color: var(--r-text);
+}
+.tpl-minimal .resume-tag:not(:last-child)::after {
+  content: "·";
+  margin-left: 0.35em;
+  color: var(--r-muted);
+}
+
+/* --- 打印：P3 的 Chromium 导出与浏览器 Ctrl+P 走同一条路径 ------------- */
+@page {
+  size: var(--r-page-size, A4);
+  margin: 0;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .resume-root,
+  .resume-root * {
+    visibility: visible;
+  }
+  .resume-root {
+    position: absolute;
+    inset: 0;
+  }
+  .resume-page {
+    break-after: page;
+    box-shadow: none !important;
+  }
+  .resume-page:last-child {
+    break-after: auto;
+  }
+}
