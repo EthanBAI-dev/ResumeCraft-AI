@@ -21,6 +21,7 @@ import { useRenderLatency } from "@/lib/perf/render-latency";
 import { sampleResume } from "@/fixtures/sample-resume";
 import { exportResumeJson } from "@/lib/export/client";
 import { exportResumeDocx } from "@/lib/export/docx";
+import { exportResumePdf, PdfWorkerUnavailableError } from "@/lib/export/pdf-client";
 
 export function Toolbar({
   status,
@@ -108,7 +109,24 @@ export function Toolbar({
         <FileText className="size-4" />
         DOCX
       </Button>
-      <Button size="sm" onClick={() => window.print()} title="在系统打印对话框中选择“另存为 PDF”">
+      <Button
+        size="sm"
+        onClick={async () => {
+          const id = toast.loading("正在生成高保真 PDF…");
+          try {
+            await exportResumePdf(resume);
+            toast.success("PDF 已开始下载", { id });
+          } catch (error) {
+            if (error instanceof PdfWorkerUnavailableError) {
+              toast.info("PDF Worker 尚未配置，已打开系统打印", { id });
+            } else {
+              toast.error("PDF 生成失败，已打开系统打印", { id });
+            }
+            window.print();
+          }
+        }}
+        title="优先使用高保真 PDF Worker；未配置时回退到系统打印"
+      >
         <FileDown className="size-4" />
         打印 / PDF
       </Button>

@@ -9,8 +9,10 @@ export default defineConfig({
     environment: "jsdom",
     setupFiles: ["./vitest.setup.ts"],
     globals: true,
-    include: ["**/*.{test,spec}.{ts,tsx}"],
-    exclude: ["node_modules/**", ".next/**", "tests/e2e/**"],
+    // 白名单比 `services/**` 排除规则更稳：pnpm workspace 会在子包创建
+    // node_modules 链接，Vitest 4 的 glob 可能沿链接扫进依赖包自己的测试源码。
+    include: ["{app,components,fixtures,lib}/**/*.{test,spec}.{ts,tsx}"],
+    exclude: ["**/node_modules/**", "**/.next/**", "**/tests/e2e/**"],
     coverage: {
       provider: "v8",
       reporter: ["text", "html"],

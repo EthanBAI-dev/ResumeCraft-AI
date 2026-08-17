@@ -1,0 +1,16 @@
+{
+  "name": "@resumecraft/pdf-worker",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "start": "tsx src/server.ts",
+    "smoke": "tsx src/smoke.ts"
+  },
+  "dependencies": {
+    "fastify": "^5.6.1",
+    "playwright": "1.61.1",
+    "tsx": "^4.21.0",
+    "zod": "^4.4.3"
+  }
+}

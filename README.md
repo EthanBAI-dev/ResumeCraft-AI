@@ -2,7 +2,7 @@
 
 **AI-Powered Visual Resume Designer** — 结构化拖拽编辑 + 实时 A4 预览 + AI 内容引擎 + ATS 可解释评分 + 高保真多格式导出。
 
-> 状态：**P1 完成**（骨架 / Schema / Store / 编辑器 / A4 实时预览）。下一步 P2：拖拽布局与真实分页。
+> 状态：**P2 完成，P3 进行中**（拖拽布局 / 真实分页 / 三套模板 / 本地导出已完成，Chromium PDF Worker 已接入）。
 > 进度与踩坑见 [开发日记](DEVLOG.md)。
 
 ```bash
@@ -10,6 +10,14 @@ pnpm install && pnpm dev
 ```
 
 打开 http://localhost:3000/builder ，点工具栏「载入示例」即可看到效果。
+
+高保真 PDF 需要另开一个终端启动 Worker，并把 `.env.example` 复制为 `.env.local`：
+
+```bash
+pnpm --filter @resumecraft/pdf-worker start
+```
+
+未配置或 Worker 暂时不可用时，工具栏会自动回退到浏览器系统打印。
 
 ---
 
@@ -33,15 +41,15 @@ ResumeCraft 走第三条路：**约束式可视化编辑**。数据是结构化�
 - ✅ **模板系统** — 3 套模板，样式与内容解耦，新增模板不改核心逻辑
 - ✅ **本地优先持久化** — IndexedDB 自动保存，不登录也能用
 - ✅ **撤销 / 重做** — 连续编辑智能合并为一步
-- ⬜ **AI 内容引擎**（P4）· **ATS 评分**（P5）· 🚧 **导出**（P3：✅ 浏览器 PDF 打印 / DOCX / JSON）· **版本管理**（P6）
+- ⬜ **AI 内容引擎**（P4）· **ATS 评分**（P5）· 🚧 **导出**（P3：✅ Chromium/浏览器 PDF、DOCX、JSON）· **版本管理**（P6）
 
 未开始部分的设计细节见 [路线图](docs/04-roadmap.md)：AI 结构化输出与 diff 审阅（P4）、ATS 规则引擎与 PDF 文本回读校验（P3/P5）、JSON Patch 版本树（P6）。
 
 ## 技术栈
 
-**已接入**：Next.js 16.3 · React 19.2 · TypeScript 5.9 · Tailwind CSS v4 · shadcn/ui（Base UI）· Zustand 5 + immer + zundo · Zod 4 · idb-keyval · Vitest 4
+**已接入**：Next.js 16.3 · React 19.2 · TypeScript 5.9 · Tailwind CSS v4 · shadcn/ui（Base UI）· Zustand 5 + immer + zundo · Zod 4 · idb-keyval · Vitest 4 · @dnd-kit · Playwright/Chromium · docx
 
-**规划中**：@dnd-kit（P2）· Playwright/Chromium + docx + pdf.js（P3）· Vercel AI SDK 6（P4）· Prisma + PostgreSQL（P6）
+**规划中**：pdf.js 回读自检（P3）· Vercel AI SDK 6（P4）· Prisma + PostgreSQL（P6）
 
 ## 文档
 
