@@ -1,13 +1,26 @@
 "use client";
 
 import { useEffect } from "react";
-import { Check, CloudOff, FileDown, Loader2, Redo2, Sparkles, Undo2 } from "lucide-react";
+import {
+  Braces,
+  Check,
+  CloudOff,
+  FileDown,
+  FileText,
+  Loader2,
+  Redo2,
+  Sparkles,
+  Undo2,
+} from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useResumeHistory, useResumeStore } from "@/lib/store/resume-store";
 import type { PersistenceStatus } from "@/lib/store/persistence";
 import { useRenderLatency } from "@/lib/perf/render-latency";
 import { sampleResume } from "@/fixtures/sample-resume";
+import { exportResumeJson } from "@/lib/export/client";
+import { exportResumeDocx } from "@/lib/export/docx";
 
 export function Toolbar({
   status,
@@ -18,6 +31,7 @@ export function Toolbar({
 }) {
   const { canUndo, canRedo, undo, redo } = useResumeHistory();
   const replaceResume = useResumeStore((s) => s.replaceResume);
+  const resume = useResumeStore((s) => s.resume);
   const latency = useRenderLatency(process.env.NODE_ENV !== "production");
 
   // Ctrl/Cmd + Z / Shift+Z
@@ -67,9 +81,36 @@ export function Toolbar({
 
       <SaveStatus status={status} savedAt={savedAt} />
 
-      <Button size="sm" onClick={() => window.print()}>
+      <Button
+        size="sm"
+        variant="outline"
+        onClick={() => {
+          exportResumeJson(resume);
+          toast.success("JSON 备份已开始下载");
+        }}
+      >
+        <Braces className="size-4" />
+        JSON
+      </Button>
+      <Button
+        size="sm"
+        variant="outline"
+        onClick={async () => {
+          const id = toast.loading("正在生成可编辑 DOCX…");
+          try {
+            await exportResumeDocx(resume);
+            toast.success("DOCX 已开始下载", { id });
+          } catch {
+            toast.error("DOCX 生成失败，请重试", { id });
+          }
+        }}
+      >
+        <FileText className="size-4" />
+        DOCX
+      </Button>
+      <Button size="sm" onClick={() => window.print()} title="在系统打印对话框中选择“另存为 PDF”">
         <FileDown className="size-4" />
-        导出 PDF
+        打印 / PDF
       </Button>
     </header>
   );
