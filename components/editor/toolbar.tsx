@@ -21,7 +21,11 @@ import { useRenderLatency } from "@/lib/perf/render-latency";
 import { sampleResume } from "@/fixtures/sample-resume";
 import { exportResumeJson } from "@/lib/export/client";
 import { exportResumeDocx } from "@/lib/export/docx";
-import { exportResumePdf, PdfWorkerUnavailableError } from "@/lib/export/pdf-client";
+import {
+  exportResumePdf,
+  PdfWorkerBusyError,
+  PdfWorkerUnavailableError,
+} from "@/lib/export/pdf-client";
 
 export function Toolbar({
   status,
@@ -119,10 +123,12 @@ export function Toolbar({
           } catch (error) {
             if (error instanceof PdfWorkerUnavailableError) {
               toast.info("PDF Worker 尚未配置，已打开系统打印", { id });
+            } else if (error instanceof PdfWorkerBusyError) {
+              toast.info("PDF Worker 正在处理较多请求，请稍后重试", { id });
             } else {
               toast.error("PDF 生成失败，已打开系统打印", { id });
             }
-            window.print();
+            if (!(error instanceof PdfWorkerBusyError)) window.print();
           }
         }}
         title="优先使用高保真 PDF Worker；未配置时回退到系统打印"

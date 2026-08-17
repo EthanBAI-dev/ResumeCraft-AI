@@ -47,6 +47,18 @@ export async function POST(request: Request) {
   }
 
   if (!response.ok) {
+    if (response.status === 429) {
+      return Response.json(
+        { error: "PDF worker 正在处理较多请求，请稍后重试" },
+        {
+          status: 429,
+          headers: { "Retry-After": response.headers.get("Retry-After") ?? "5" },
+        },
+      );
+    }
+    if (response.status === 504) {
+      return Response.json({ error: "PDF worker 生成超时，请稍后重试" }, { status: 504 });
+    }
     return Response.json({ error: "PDF worker 生成失败" }, { status: 502 });
   }
 

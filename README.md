@@ -17,6 +17,9 @@ pnpm install && pnpm dev
 pnpm --filter @resumecraft/pdf-worker start
 ```
 
+Worker 默认同时渲染 2 份简历、最多排队 4 份；可通过 `MAX_CONCURRENT_RENDERS`、
+`MAX_QUEUED_RENDERS` 与 `RENDER_TIMEOUT_MS` 调整。`/health` 和 `/metrics` 会返回当前队列状态。
+
 未配置或 Worker 暂时不可用时，工具栏会自动回退到浏览器系统打印。
 
 ---

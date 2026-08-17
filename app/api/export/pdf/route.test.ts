@@ -72,6 +72,23 @@ describe("POST /api/export/pdf", () => {
     expect((await POST(request(validBody))).status).toBe(502);
   });
 
+  it("保留 Worker 的过载信号，供前端提示稍后重试", async () => {
+    vi.stubEnv("PDF_WORKER_URL", "http://worker:3001");
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(JSON.stringify({ error: "busy" }), {
+          status: 429,
+          headers: { "Retry-After": "5" },
+        }),
+      ),
+    );
+
+    const response = await POST(request(validBody));
+    expect(response.status).toBe(429);
+    expect(response.headers.get("Retry-After")).toBe("5");
+  });
+
   it("把 Worker 超时映射为 504", async () => {
     vi.stubEnv("PDF_WORKER_URL", "http://worker:3001");
     vi.stubGlobal(

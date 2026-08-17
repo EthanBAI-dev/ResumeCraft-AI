@@ -10,6 +10,12 @@ export class PdfWorkerUnavailableError extends Error {
   }
 }
 
+export class PdfWorkerBusyError extends Error {
+  constructor() {
+    super("PDF worker 正在处理较多请求");
+  }
+}
+
 /**
  * 预览的 .resume-root 是唯一真相。导出时克隆它和同源 CSS，而不是重建第二套 HTML；
  * 仅剥离编辑态的拖拽手柄，保留用户自定义 CSS 与分页结构。
@@ -29,6 +35,7 @@ export async function exportResumePdf(resume: ResumeData) {
   });
 
   if (response.status === 503) throw new PdfWorkerUnavailableError();
+  if (response.status === 429 || response.status === 504) throw new PdfWorkerBusyError();
   if (!response.ok) throw new Error("PDF worker 生成失败");
 
   const blob = await response.blob();
