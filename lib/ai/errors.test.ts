@@ -6,6 +6,15 @@ describe("AI 错误归一化", () => {
   it("保留配置错误", () => {
     const original = new AiError({ code: "configuration", message: "missing", status: 503 });
     expect(normalizeAiError(original)).toBe(original);
+
+    const serialized = {
+      name: "AiError",
+      message: "rate limited",
+      code: "rate_limit" as const,
+      retryable: true,
+      status: 429,
+    };
+    expect(normalizeAiError(serialized)).toBe(serialized);
   });
 
   it("把限流和鉴权错误映射为稳定错误码", () => {

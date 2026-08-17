@@ -1,4 +1,11 @@
-import { APICallError, NoContentGeneratedError, RetryError } from "ai";
+import {
+  APICallError,
+  JSONParseError,
+  NoContentGeneratedError,
+  NoOutputGeneratedError,
+  RetryError,
+  TypeValidationError,
+} from "ai";
 
 export type AiErrorCode =
   | "configuration"
@@ -9,6 +16,17 @@ export type AiErrorCode =
   | "invalid_response"
   | "provider_unavailable"
   | "unknown";
+
+const AI_ERROR_CODES: readonly AiErrorCode[] = [
+  "configuration",
+  "authentication",
+  "rate_limit",
+  "timeout",
+  "aborted",
+  "invalid_response",
+  "provider_unavailable",
+  "unknown",
+];
 
 export class AiError extends Error {
   readonly code: AiErrorCode;
@@ -44,11 +62,27 @@ export class AiError extends Error {
   }
 }
 
+export function isAiError(error: unknown): error is AiError {
+  if (error instanceof AiError) return true;
+  if (!error || typeof error !== "object") return false;
+  const candidate = error as Partial<AiError>;
+  return (
+    candidate.name === "AiError" &&
+    typeof candidate.message === "string" &&
+    typeof candidate.code === "string" &&
+    AI_ERROR_CODES.includes(candidate.code as AiErrorCode) &&
+    typeof candidate.retryable === "boolean" &&
+    typeof candidate.status === "number" &&
+    candidate.status >= 400 &&
+    candidate.status <= 599
+  );
+}
+
 export function normalizeAiError(
   error: unknown,
   context: { provider?: string; model?: string; userAborted?: boolean } = {},
 ): AiError {
-  if (error instanceof AiError) return error;
+  if (isAiError(error)) return error;
   const leaf = RetryError.isInstance(error) ? error.lastError : error;
   const base = { provider: context.provider, model: context.model, cause: error };
 
@@ -95,7 +129,12 @@ export function normalizeAiError(
       status: leaf.isRetryable ? 503 : 502,
     });
   }
-  if (NoContentGeneratedError.isInstance(leaf)) {
+  if (
+    NoContentGeneratedError.isInstance(leaf) ||
+    NoOutputGeneratedError.isInstance(leaf) ||
+    JSONParseError.isInstance(leaf) ||
+    TypeValidationError.isInstance(leaf)
+  ) {
     return new AiError({
       ...base,
       code: "invalid_response",

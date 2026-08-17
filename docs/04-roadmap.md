@@ -131,8 +131,8 @@
 
 **Day 18–19** 结构化输出 + 流式
 
-- `generateObject` 直出 `ExperienceItemSchema`，校验失败自动重试
-- 流式 `streamObject` + `AbortController` 中断
+- AI SDK 6 `generateText + Output.object` 直出 Zod 对象，校验失败自动重试
+- AI SDK 6 `streamText + Output.object` + `AbortController` 中断
 - 服务端 Route Handler，Upstash 限流
 
 **Day 20–21** Diff 审阅 UI
