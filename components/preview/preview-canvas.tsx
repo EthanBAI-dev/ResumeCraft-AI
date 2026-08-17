@@ -1,13 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { AlertTriangle, Maximize2, Minus, Plus } from "lucide-react";
+import { AlertTriangle, FileMinus2, FilePlus2, Maximize2, Minus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PAGE_SIZES, mmToPx } from "@/lib/constants";
-import { useResume } from "@/lib/store/resume-store";
+import { useResume, useResumeStore } from "@/lib/store/resume-store";
 import { ZOOM_MAX, ZOOM_MIN, useEditorStore } from "@/lib/store/editor-store";
 import { cn } from "@/lib/utils";
-import { ResumeDocument } from "./resume-document";
+import { addPage, createSplitPlan, removePage, splitPage } from "@/lib/layout/operations";
+import { LayoutEditor } from "./layout-editor";
 
 /**
  * 预览画布：负责缩放适配、溢出检测和性能观测，不负责简历内容本身。
@@ -20,11 +21,13 @@ export function PreviewCanvas() {
   const zoom = useEditorStore((s) => s.zoom);
   const setZoom = useEditorStore((s) => s.setZoom);
   const zoomBy = useEditorStore((s) => s.zoomBy);
+  const setLayout = useResumeStore((s) => s.setLayout);
 
   const viewportRef = useRef<HTMLDivElement>(null);
   const documentRef = useRef<HTMLDivElement>(null);
   const [fitScale, setFitScale] = useState(1);
   const [overflow, setOverflow] = useState<{ page: number; px: number }[]>([]);
+  const [unbreakablePages, setUnbreakablePages] = useState<number[]>([]);
 
   const pageWidthPx = mmToPx(PAGE_SIZES[resume.metadata.page.format].width);
   const scale = zoom ?? fitScale;
@@ -97,6 +100,71 @@ export function PreviewCanvas() {
     };
   }, [resume, measureOverflow]);
 
+  // 真分页：DOM 负责回答"哪一个区块首次越过纸底"，纯 layout 函数负责把它和
+  // 后续区块移到新页。两者刻意分开，避免将浏览器测量细节渗入 schema / 导出路径。
+  // 一个比整页还高的区块不能被强行从中间切开（会破坏语义和 ATS 阅读顺序），保留它并
+  // 明确告警；其他区块会在后续 effect 中逐页继续拆分，直到所有可拆内容落到纸内。
+  useEffect(() => {
+    const root = documentRef.current;
+    if (!root) return;
+
+    const splits = new Map<number, number[]>();
+    const unbreakable = new Set<number>();
+
+    root.querySelectorAll<HTMLElement>(".resume-page").forEach((page, pageIndex) => {
+      const contentArea = page.querySelector<HTMLElement>(".resume-columns");
+      if (!contentArea) return;
+      const bottom = contentArea.getBoundingClientRect().bottom;
+      const splitAt: number[] = [];
+
+      page.querySelectorAll<HTMLElement>(".resume-column").forEach((column, columnIndex) => {
+        const blocks = [...column.querySelectorAll<HTMLElement>(":scope > .layout-section")].filter(
+          (block) => block.getBoundingClientRect().height > 1,
+        );
+        const firstOverflow = blocks.findIndex(
+          (block) => block.getBoundingClientRect().bottom > bottom + 1,
+        );
+        if (firstOverflow > 0) {
+          const overflowId = blocks[firstOverflow].dataset.layoutSection;
+          if (overflowId) {
+            const plan = createSplitPlan(
+              resume.layout,
+              pageIndex,
+              overflowId,
+              resume.metadata.page.columnRatio >= 0.999,
+            );
+            plan.forEach((index, logicalColumn) => {
+              if (index !== undefined) splitAt[logicalColumn] = index;
+            });
+          } else {
+            splitAt[columnIndex] = firstOverflow;
+          }
+        }
+        if (firstOverflow === 0) unbreakable.add(pageIndex + 1);
+      });
+
+      if (splitAt.some((index) => index !== undefined)) splits.set(pageIndex, splitAt);
+    });
+
+    setUnbreakablePages((previous) => {
+      const next = [...unbreakable];
+      return previous.length === next.length && previous.every((page, i) => page === next[i])
+        ? previous
+        : next;
+    });
+
+    // 从后往前拆，插入新页不会影响前面已记录的页号。
+    if (splits.size > 0) {
+      let nextLayout = resume.layout;
+      [...splits.entries()]
+        .sort(([a], [b]) => b - a)
+        .forEach(([pageIndex, splitAt]) => {
+          nextLayout = splitPage(nextLayout, pageIndex, splitAt);
+        });
+      setLayout(nextLayout, { recordHistory: false });
+    }
+  }, [resume, setLayout]);
+
   return (
     <div className="bg-muted/40 flex h-full min-w-0 flex-col">
       <div className="bg-background/80 flex items-center justify-between gap-2 border-b px-3 py-2 backdrop-blur">
@@ -124,6 +192,26 @@ export function PreviewCanvas() {
           </Button>
           <Button variant="ghost" size="icon" aria-label="适应宽度" onClick={() => setZoom(null)}>
             <Maximize2 className="size-4" />
+          </Button>
+          <span className="bg-border mx-1 h-4 w-px" aria-hidden="true" />
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="在末尾添加空白页"
+            title="在末尾添加空白页"
+            onClick={() => setLayout(addPage(resume.layout))}
+          >
+            <FilePlus2 className="size-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="移除末页并合并内容"
+            title="移除末页并合并内容"
+            disabled={resume.layout.length <= 1}
+            onClick={() => setLayout(removePage(resume.layout, resume.layout.length - 1))}
+          >
+            <FileMinus2 className="size-4" />
           </Button>
         </div>
 
@@ -159,10 +247,16 @@ export function PreviewCanvas() {
               overflow.length > 0 && "[&_.resume-page]:ring-amber-400/60",
             )}
           >
-            <ResumeDocument resume={resume} />
+            <LayoutEditor resume={resume} />
           </div>
         </div>
       </div>
+      {unbreakablePages.length > 0 ? (
+        <div className="border-t bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:bg-amber-950/30 dark:text-amber-300">
+          第 {unbreakablePages.join("、")} 页有单一区块高于可用纸面，无法在区块中间自动断开；
+          请缩短该区块或调小字号/页边距。
+        </div>
+      ) : null}
     </div>
   );
 }

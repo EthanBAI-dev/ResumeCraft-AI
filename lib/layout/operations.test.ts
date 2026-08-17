@@ -4,6 +4,7 @@ import {
   SIDE_COLUMN,
   addPage,
   createLayout,
+  createSplitPlan,
   findSection,
   flattenLayout,
   insertSection,
@@ -11,7 +12,9 @@ import {
   normalizeLayout,
   removePage,
   removeSection,
+  splitPage,
   swapColumns,
+  trimEmptyTrailingPages,
   validateLayout,
   type Layout,
 } from "./operations";
@@ -129,6 +132,39 @@ describe("分页", () => {
   it("只剩一页时 removePage 是空操作", () => {
     const input = base();
     expect(removePage(input, 0)).toBe(input);
+  });
+
+  it("splitPage 同时搬运两栏的溢出尾部", () => {
+    const out = splitPage(base(), 0, [2, 1]);
+    expect(out).toEqual([
+      [["summary", "experience"], ["basics"]],
+      [["project"], ["skill", "education"]],
+    ]);
+  });
+
+  it("splitPage 不会修改入参，且没有可搬运区块时原样返回", () => {
+    const input = base();
+    const snapshot = JSON.stringify(input);
+    expect(splitPage(input, 0, [3, 3])).toBe(input);
+    splitPage(input, 0, [1, undefined]);
+    expect(JSON.stringify(input)).toBe(snapshot);
+  });
+
+  it("trimEmptyTrailingPages 只移除末尾的连续空页", () => {
+    const input: Layout = [
+      [["summary"], []],
+      [[], []],
+      [[], []],
+    ];
+    expect(trimEmptyTrailingPages(input)).toEqual([[["summary"], []]]);
+  });
+
+  it("单栏模板从主栏溢出时，后续逻辑栏整栏迁移", () => {
+    expect(createSplitPlan(base(), 0, "experience", true)).toEqual([1, 0]);
+  });
+
+  it("双栏模板只拆发生溢出的栏", () => {
+    expect(createSplitPlan(base(), 0, "skill", false)).toEqual([undefined, 1]);
   });
 });
 

@@ -43,6 +43,33 @@ export function findSection(layout: Layout, id: string): LayoutAddr | null {
 }
 
 /**
+ * 把 DOM 测到的首个溢出区块还原成 splitPage 所需的各栏拆分下标。
+ * 单栏模板会按 column0 → column1 的顺序合并显示；如果主栏中途溢出，
+ * 后续逻辑栏也必须整栏移到下一页，否则视觉阅读顺序会被打乱。
+ */
+export function createSplitPlan(
+  layout: Layout,
+  pageIndex: number,
+  firstOverflowId: string,
+  mergedColumns: boolean,
+): (number | undefined)[] {
+  const location = findSection(layout, firstOverflowId);
+  if (!location || location.page !== pageIndex) return [];
+
+  const plan: (number | undefined)[] = [];
+  plan[location.column] = location.index;
+
+  if (mergedColumns) {
+    const columnCount = layout[pageIndex]?.length ?? 0;
+    for (let column = location.column + 1; column < columnCount; column++) {
+      plan[column] = 0;
+    }
+  }
+
+  return plan;
+}
+
+/**
  * 修复 layout，使其满足三条不变量：
  *  1. layout 中的每个 id 都存在于 availableIds
  *  2. 每个 id 在整个 layout 中只出现一次（重复的保留第一个）
@@ -132,6 +159,43 @@ export function addPage(layout: Layout, afterPage = layout.length - 1): Layout {
   const next = clone(layout);
   const columns = next[0]?.length ?? 2;
   next.splice(clamp(afterPage, -1, next.length - 1) + 1, 0, emptyPage(columns));
+  return next;
+}
+
+/**
+ * 把指定页各栏从 splitAt 起的区块整体移到紧随其后的新页。
+ *
+ * `splitAt[column]` 是首个放不进当前页的区块下标。分栏必须一起拆：
+ * 这样主栏和侧栏会继续在同一张新纸上从上往下阅读，而不是产生两张错位页面。
+ * 没有给出下标的栏留在原页；下标等于栏长度时也是空操作。
+ */
+export function splitPage(
+  layout: Layout,
+  pageIndex: number,
+  splitAt: readonly (number | undefined)[],
+): Layout {
+  if (pageIndex < 0 || pageIndex >= layout.length) return layout;
+
+  const next = clone(layout);
+  const page = next[pageIndex];
+  const spill = page.map((column, columnIndex) => {
+    const index = splitAt[columnIndex];
+    if (index === undefined) return [];
+    return column.splice(clamp(index, 0, column.length), column.length);
+  });
+
+  if (spill.every((column) => column.length === 0)) return layout;
+  next.splice(pageIndex + 1, 0, spill);
+  return next;
+}
+
+/** 删除末尾连续空页；至少保留一页。用于内容删减后的重新分页。 */
+export function trimEmptyTrailingPages(layout: Layout): Layout {
+  if (layout.length <= 1) return layout;
+  const next = clone(layout);
+  while (next.length > 1 && next.at(-1)?.every((column) => column.length === 0)) {
+    next.pop();
+  }
   return next;
 }
 

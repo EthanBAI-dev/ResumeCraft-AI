@@ -55,7 +55,11 @@ type ResumeActions = {
   moveItem: (sectionId: string, from: number, to: number) => void;
   duplicateItem: (sectionId: string, itemId: string) => void;
 
-  setLayout: (layout: Layout) => void;
+  /**
+   * 结构布局与内容编辑共用同一份 undo 历史。自动分页属于派生结果，
+   * 不应在用户每次输入后额外塞进一条撤销记录，因此可显式跳过历史。
+   */
+  setLayout: (layout: Layout, options?: { recordHistory?: boolean }) => void;
   moveSectionTo: (id: string, addr: LayoutAddr) => void;
 };
 
@@ -207,10 +211,17 @@ export const useResumeStore = create<ResumeStore>()(
           items.splice(index + 1, 0, copy);
         }),
 
-      setLayout: (layout) =>
+      setLayout: (layout, options) => {
+        const record = options?.recordHistory ?? true;
+        const temporalStore = useResumeStore.temporal.getState();
+        if (!record) temporalStore.pause();
+
         set((state) => {
           state.resume.layout = normalizeLayout(layout, availableSectionIds(state.resume));
-        }),
+        });
+
+        if (!record) temporalStore.resume();
+      },
 
       moveSectionTo: (id, addr) =>
         set((state) => {

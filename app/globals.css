@@ -171,6 +171,96 @@
   min-width: 0;
 }
 
+/* P2 布局编辑层。只出现在浏览器编辑器中；PDF 导出不注入这些节点。 */
+.layout-drop-zone {
+  min-width: 0;
+  min-height: 2rem;
+  border-radius: 4px;
+  transition:
+    background-color 120ms ease,
+    outline-color 120ms ease;
+}
+
+.layout-drop-zone > .resume-column {
+  height: 100%;
+}
+
+.layout-drop-zone--over {
+  background: color-mix(in oklab, var(--r-primary) 7%, transparent);
+  outline: 1px dashed color-mix(in oklab, var(--r-primary) 52%, transparent);
+  outline-offset: 3px;
+}
+
+.layout-section {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.layout-section--dragging {
+  opacity: 0.28;
+}
+
+.layout-section--over::before {
+  content: "";
+  position: absolute;
+  z-index: 3;
+  top: calc(var(--r-section-gap) * -0.5);
+  right: 0;
+  left: 0;
+  height: 2px;
+  border-radius: 999px;
+  background: var(--r-primary);
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--r-primary) 18%, transparent);
+}
+
+.layout-drag-handle {
+  position: absolute;
+  z-index: 2;
+  top: 0.15rem;
+  left: -1.25rem;
+  display: grid;
+  width: 1rem;
+  height: 1.65rem;
+  cursor: grab;
+  place-items: center;
+  border: 0;
+  border-radius: 3px;
+  background: color-mix(in oklab, var(--r-bg) 88%, var(--r-primary));
+  color: var(--r-muted);
+  opacity: 0;
+  transition:
+    opacity 120ms ease,
+    color 120ms ease,
+    background-color 120ms ease;
+}
+
+.layout-section:hover > .layout-drag-handle,
+.layout-drag-handle:focus-visible {
+  opacity: 1;
+}
+
+.layout-drag-handle:hover,
+.layout-drag-handle:focus-visible {
+  background: var(--r-primary);
+  color: var(--r-bg);
+  outline: 2px solid var(--r-primary);
+  outline-offset: 2px;
+}
+
+.layout-drag-handle:active {
+  cursor: grabbing;
+}
+
+.layout-drag-overlay {
+  border: 1px solid color-mix(in oklab, var(--r-primary) 45%, transparent);
+  border-radius: 4px;
+  background: var(--r-bg);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 14%);
+  color: var(--r-primary);
+  padding: 0.4rem 0.65rem;
+  font-size: 0.85em;
+}
+
 .resume-section {
   break-inside: avoid;
   /* 关键：flex 子项默认 flex-shrink:1，内容超出一页时会被悄悄压扁，
@@ -325,5 +415,8 @@
   }
   .resume-page:last-child {
     break-after: auto;
+  }
+  .layout-drag-handle {
+    display: none !important;
   }
 }

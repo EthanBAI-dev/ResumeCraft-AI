@@ -1,4 +1,4 @@
-import type { CSSProperties } from "react";
+import { Fragment, type CSSProperties, type ReactNode } from "react";
 import { PAGE_SIZES } from "@/lib/constants";
 import type { ResumeData } from "@/lib/schema";
 import { getTemplate } from "@/components/templates/registry";
@@ -10,7 +10,30 @@ import { BasicsBlock, SectionBlock } from "./blocks";
  * 它是纯组件：屏幕预览挂在编辑器右侧，PDF 导出时由 Worker 用同一份组件树 SSR 后交给
  * Chromium 打印。两边共用同一份 CSS，因此不存在"预览好看、导出走样"的问题。
  */
-export function ResumeDocument({ resume }: { resume: ResumeData }) {
+type RenderBlock = (args: {
+  id: string;
+  pageIndex: number;
+  columnIndex: number;
+  index: number;
+  children: ReactNode;
+}) => ReactNode;
+
+type RenderColumn = (args: {
+  pageIndex: number;
+  columnIndex: number;
+  sectionIds: readonly string[];
+  children: ReactNode;
+}) => ReactNode;
+
+type ResumeDocumentProps = {
+  resume: ResumeData;
+  /** P2 编辑器注入可排序外壳；导出时不传，保证纸面只有内容本身。 */
+  renderBlock?: RenderBlock;
+  /** P2 编辑器注入可放置栏；导出时不传，保证 DOM 语义最小。 */
+  renderColumn?: RenderColumn;
+};
+
+export function ResumeDocument({ resume, renderBlock, renderColumn }: ResumeDocumentProps) {
   const { metadata, layout, sections, basics } = resume;
   const template = getTemplate(metadata.template);
   const page = PAGE_SIZES[metadata.page.format];
@@ -59,17 +82,33 @@ export function ResumeDocument({ resume }: { resume: ResumeData }) {
                     : sectionIds;
               if (ratio >= 0.999 && columnIndex > 0) return null;
 
-              return (
+              const content = ids.map((id, index) => {
+                const block =
+                  id === "basics" ? (
+                    <BasicsBlock basics={basics} />
+                  ) : sections[id] ? (
+                    <SectionBlock section={sections[id]} locale={metadata.locale} />
+                  ) : null;
+                if (!block) return null;
+
+                return renderBlock ? (
+                  <Fragment key={id}>
+                    {renderBlock({ id, pageIndex, columnIndex, index, children: block })}
+                  </Fragment>
+                ) : (
+                  <Fragment key={id}>{block}</Fragment>
+                );
+              });
+
+              const column = (
                 <div key={columnIndex} className="resume-column" data-column={columnIndex}>
-                  {ids.map((id) =>
-                    id === "basics" ? (
-                      <BasicsBlock key={id} basics={basics} />
-                    ) : sections[id] ? (
-                      <SectionBlock key={id} section={sections[id]} locale={metadata.locale} />
-                    ) : null,
-                  )}
+                  {content}
                 </div>
               );
+
+              return renderColumn
+                ? renderColumn({ pageIndex, columnIndex, sectionIds: ids, children: column })
+                : column;
             })}
           </div>
 
