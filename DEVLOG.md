@@ -71,7 +71,7 @@ ResumeCraft 的逐日工程记录。**只写真实发生的事** —— 未开�
 | 日  | 标题                                                                       | 状态 |
 | --- | -------------------------------------------------------------------------- | ---- |
 | 16  | [AI Provider 抽象与用量边界](docs/devlog/day-16-ai-provider-foundation.md) | ✅   |
-| 17  | Prompt 体系与三模型中文盲测                                                | ⬜   |
+| 17  | [版本化 Prompt 与不可信 JD 边界](docs/devlog/day-17-versioned-prompts.md)  | ✅   |
 | 18  | 结构化输出：让 AI 直接产出合法 Schema                                      | ⬜   |
 | 19  | 流式与中断                                                                 | ⬜   |
 | 20  | ★ Diff 审阅 UI：AI 不许直接改我的简历                                      | ⬜   |

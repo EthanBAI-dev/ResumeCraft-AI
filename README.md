@@ -2,7 +2,7 @@
 
 **AI-Powered Visual Resume Designer** — 结构化拖拽编辑 + 实时 A4 预览 + AI 内容引擎 + ATS 可解释评分 + 高保真多格式导出。
 
-> 状态：**P3 完成，P4 进行中**（多格式导出完成；四家 AI Provider 抽象、韧性预算与用量计量边界已接入）。
+> 状态：**P3 完成，P4 进行中**（多格式导出完成；四家 AI Provider、五类版本化 Prompt 与注入防护已接入）。
 > 进度与踩坑见 [开发日记](DEVLOG.md)。
 
 ```bash
@@ -46,7 +46,7 @@ ResumeCraft 走第三条路：**约束式可视化编辑**。数据是结构化�
 - ✅ **本地优先持久化** — IndexedDB 自动保存，不登录也能用
 - ✅ **撤销 / 重做** — 连续编辑智能合并为一步
 - ✅ **多格式导出** — Chromium/浏览器 PDF、PDF 文本回读、DOCX、PDF 首页 PNG、原生 JSON 与 JSON Resume 双向互转
-- 🚧 **AI 内容引擎** — OpenAI / Anthropic / Gemini / DeepSeek 统一 Provider，Prompt、结构化输出与 Diff 审阅继续建设
+- 🚧 **AI 内容引擎** — OpenAI / Anthropic / Gemini / DeepSeek 统一 Provider，已实现 rewrite / expand / condense / translate / generate Prompt；结构化输出与 Diff 审阅继续建设
 - ⬜ **ATS 评分**（P5）· **版本管理**（P6）
 
 未开始部分的设计细节见 [路线图](docs/04-roadmap.md)：AI 结构化输出与 diff 审阅（P4）、ATS 规则引擎与 PDF 文本回读校验（P3/P5）、JSON Patch 版本树（P6）。

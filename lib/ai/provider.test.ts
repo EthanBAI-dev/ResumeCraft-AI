@@ -52,6 +52,7 @@ describe("AI Provider 解析", () => {
       "deepseek",
     ]);
     expect(getDefaultModelReference("openai")).toBe("openai:gpt-5.6-luna");
+    expect(getDefaultModelReference("deepseek")).toBe("deepseek:deepseek-v4-flash");
   });
 
   it("OpenAI 工厂明确创建 Responses API 模型", () => {

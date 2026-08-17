@@ -35,7 +35,7 @@ const PROVIDER_CONFIG: Record<
   deepseek: {
     keyVariable: "DEEPSEEK_API_KEY",
     baseUrlVariable: "DEEPSEEK_BASE_URL",
-    defaultModel: "deepseek-chat",
+    defaultModel: "deepseek-v4-flash",
   },
 };
 
