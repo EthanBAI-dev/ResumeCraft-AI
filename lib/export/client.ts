@@ -2,6 +2,7 @@
 
 import type { ResumeData } from "@/lib/schema";
 import { resumeFileName } from "./filename";
+import { toJsonResume } from "./json-resume";
 
 /** 浏览器端通用下载。URL 在下一帧释放，避免内存累积且不打断下载。 */
 export function downloadBlob(blob: Blob, filename: string) {
@@ -21,4 +22,11 @@ export function exportResumeJson(resume: ResumeData) {
     type: "application/json;charset=utf-8",
   });
   downloadBlob(blob, resumeFileName(resume.basics.name, "json"));
+}
+
+export function exportJsonResume(resume: ResumeData) {
+  const blob = new Blob([JSON.stringify(toJsonResume(resume), null, 2)], {
+    type: "application/json;charset=utf-8",
+  });
+  downloadBlob(blob, resumeFileName(`${resume.basics.name}-json-resume`, "json"));
 }

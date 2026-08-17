@@ -1,12 +1,15 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import {
   Braces,
   Check,
   CloudOff,
   FileDown,
+  FileInput,
+  FileJson2,
   FileText,
+  ImageDown,
   Loader2,
   Redo2,
   Sparkles,
@@ -19,8 +22,10 @@ import { useResumeHistory, useResumeStore } from "@/lib/store/resume-store";
 import type { PersistenceStatus } from "@/lib/store/persistence";
 import { useRenderLatency } from "@/lib/perf/render-latency";
 import { sampleResume } from "@/fixtures/sample-resume";
-import { exportResumeJson } from "@/lib/export/client";
+import { exportJsonResume, exportResumeJson } from "@/lib/export/client";
 import { exportResumeDocx } from "@/lib/export/docx";
+import { importResumeJson } from "@/lib/export/json-resume";
+import { exportResumePng } from "@/lib/export/png";
 import {
   exportResumePdf,
   PdfWorkerBusyError,
@@ -37,6 +42,7 @@ export function Toolbar({
   const { canUndo, canRedo, undo, redo } = useResumeHistory();
   const replaceResume = useResumeStore((s) => s.replaceResume);
   const resume = useResumeStore((s) => s.resume);
+  const importInputRef = useRef<HTMLInputElement>(null);
   const latency = useRenderLatency(process.env.NODE_ENV !== "production");
 
   // Ctrl/Cmd + Z / Shift+Z
@@ -86,6 +92,35 @@ export function Toolbar({
 
       <SaveStatus status={status} savedAt={savedAt} />
 
+      <input
+        ref={importInputRef}
+        className="hidden"
+        type="file"
+        accept="application/json,.json"
+        onChange={async (event) => {
+          const file = event.currentTarget.files?.[0];
+          event.currentTarget.value = "";
+          if (!file) return;
+          try {
+            const imported = importResumeJson(await file.text());
+            replaceResume(imported.resume);
+            toast.success(
+              imported.format === "resumecraft" ? "ResumeCraft 备份已导入" : "JSON Resume 已导入",
+            );
+          } catch {
+            toast.error("JSON 导入失败，请检查文件格式");
+          }
+        }}
+      />
+      <Button
+        size="sm"
+        variant="outline"
+        onClick={() => importInputRef.current?.click()}
+        title="导入 ResumeCraft 备份或标准 JSON Resume"
+      >
+        <FileInput className="size-4" />
+        导入
+      </Button>
       <Button
         size="sm"
         variant="outline"
@@ -100,11 +135,26 @@ export function Toolbar({
       <Button
         size="sm"
         variant="outline"
+        onClick={() => {
+          exportJsonResume(resume);
+          toast.success("JSON Resume 已开始下载");
+        }}
+        title="导出 JSON Resume 标准格式"
+      >
+        <FileJson2 className="size-4" />
+        JSON Resume
+      </Button>
+      <Button
+        size="sm"
+        variant="outline"
         onClick={async () => {
           const id = toast.loading("正在生成可编辑 DOCX…");
           try {
             await exportResumeDocx(resume);
-            toast.success("DOCX 已开始下载", { id });
+            toast.success("DOCX 已开始下载", {
+              id,
+              description: "DOCX 保持内容结构与可编辑性，不保证与 PDF 像素一致",
+            });
           } catch {
             toast.error("DOCX 生成失败，请重试", { id });
           }
@@ -112,6 +162,29 @@ export function Toolbar({
       >
         <FileText className="size-4" />
         DOCX
+      </Button>
+      <Button
+        size="sm"
+        variant="outline"
+        onClick={async () => {
+          const id = toast.loading("正在从 PDF 渲染首页 PNG…");
+          try {
+            await exportResumePng(resume);
+            toast.success("PNG 首页已开始下载", { id });
+          } catch (error) {
+            if (error instanceof PdfWorkerBusyError) {
+              toast.info("PDF Worker 正在处理较多请求，请稍后重试", { id });
+            } else if (error instanceof PdfWorkerUnavailableError) {
+              toast.error("PNG 导出需要配置 PDF Worker", { id });
+            } else {
+              toast.error("PNG 生成失败，请重试", { id });
+            }
+          }
+        }}
+        title="从最终 PDF 的第一页生成 PNG"
+      >
+        <ImageDown className="size-4" />
+        PNG
       </Button>
       <Button
         size="sm"

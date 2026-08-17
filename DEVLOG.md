@@ -64,7 +64,7 @@ ResumeCraft 的逐日工程记录。**只写真实发生的事** —— 未开�
 | 12  | [PDF Worker：同一份 DOM 进入 Chromium](docs/devlog/day-12-pdf-worker.md)   | ✅   |
 | 13  | [Chromium 实例池化与并发控制](docs/devlog/day-13-render-queue.md)          | ✅   |
 | 14  | [PDF 文本回读自检](docs/devlog/day-14-readback-foundation.md)              | ✅   |
-| 15  | DOCX / PNG / JSON Resume 互转                                              | ⬜   |
+| 15  | [PNG 与 JSON Resume 双向互转](docs/devlog/day-15-multi-format-export.md)   | ✅   |
 
 ### P4 · AI 引擎（6 天）
 
