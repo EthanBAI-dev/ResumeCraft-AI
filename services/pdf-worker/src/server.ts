@@ -1,7 +1,12 @@
 import Fastify from "fastify";
 import { z } from "zod";
 import { launchBrowser } from "./browser.js";
-import { RenderGate, RenderQueueFullError } from "./render-gate.js";
+import {
+  RenderGate,
+  RenderQueueClosedError,
+  RenderQueueFullError,
+  RenderQueueTimeoutError,
+} from "./render-gate.js";
 
 const RenderRequest = z.object({
   html: z.string().min(100).max(2_000_000),
@@ -12,6 +17,7 @@ const renderTimeoutMs = readBoundedEnv("RENDER_TIMEOUT_MS", 25_000, 1_000, 60_00
 const gate = new RenderGate(
   readBoundedEnv("MAX_CONCURRENT_RENDERS", 2, 1, 8),
   readBoundedEnv("MAX_QUEUED_RENDERS", 4, 0, 32),
+  readBoundedEnv("QUEUE_TIMEOUT_MS", 5_000, 100, 30_000),
 );
 const app = Fastify({ logger: true, bodyLimit: 2_100_000 });
 const browser = await launchBrowser();
@@ -42,6 +48,9 @@ app.post("/render", async (request, reply) => {
         .header("Retry-After", "5")
         .send({ error: "PDF 渲染繁忙，请稍后重试" });
     }
+    if (error instanceof RenderQueueTimeoutError || error instanceof RenderQueueClosedError) {
+      return reply.status(503).header("Retry-After", "1").send({ error: "PDF 渲染队列暂时不可用" });
+    }
     throw error;
   }
 });
@@ -53,26 +62,30 @@ async function renderPdf(html: string) {
   });
   const page = await context.newPage();
   try {
-    // 导出 HTML 已内联 CSS；禁止访问公网，避免用户 CSS/HTML 把 Worker 变成 SSRF 代理。
-    await page.route("**/*", async (route) => {
-      const protocol = new URL(route.request().url()).protocol;
-      if (protocol === "about:" || protocol === "data:" || protocol === "blob:") {
-        await route.continue();
-      } else {
-        await route.abort("blockedbyclient");
-      }
-    });
-    page.setDefaultTimeout(20_000);
-    await page.setContent(html, { waitUntil: "networkidle", timeout: 20_000 });
-    await page.evaluate(() => document.fonts.ready);
     return await withinDeadline(
-      page.pdf({
-        format: "A4",
-        printBackground: true,
-        preferCSSPageSize: true,
-        margin: { top: "0", right: "0", bottom: "0", left: "0" },
-      }),
+      (async () => {
+        // 导出 HTML 已内联 CSS；禁止访问公网，避免用户 CSS/HTML 把 Worker 变成 SSRF 代理。
+        await page.route("**/*", async (route) => {
+          const protocol = new URL(route.request().url()).protocol;
+          if (protocol === "about:" || protocol === "data:" || protocol === "blob:") {
+            await route.continue();
+          } else {
+            await route.abort("blockedbyclient");
+          }
+        });
+        // 让外层总时限先触发并关闭 Context，所有 Playwright 操作统一映射成 504。
+        page.setDefaultTimeout(renderTimeoutMs + 1_000);
+        await page.setContent(html, { waitUntil: "networkidle" });
+        await page.evaluate(() => document.fonts.ready);
+        return page.pdf({
+          format: "A4",
+          printBackground: true,
+          preferCSSPageSize: true,
+          margin: { top: "0", right: "0", bottom: "0", left: "0" },
+        });
+      })(),
       renderTimeoutMs,
+      () => context.close(),
     );
   } finally {
     await context.close();
@@ -97,6 +110,16 @@ app.addHook("onClose", async () => {
 
 await app.listen({ host: "0.0.0.0", port: Number(process.env.PORT ?? 3001) });
 
+for (const signal of ["SIGINT", "SIGTERM"] as const) {
+  process.once(signal, () => {
+    app.log.info({ signal }, "Shutting down PDF worker");
+    void app.close().catch((error: unknown) => {
+      app.log.error(error, "Failed to close PDF worker cleanly");
+      process.exitCode = 1;
+    });
+  });
+}
+
 function safeFilename(value = "resume") {
   return value.replace(/[^a-zA-Z0-9._-]/g, "-").slice(0, 160) || "resume";
 }
@@ -106,13 +129,20 @@ function readBoundedEnv(name: string, fallback: number, min: number, max: number
   return Number.isInteger(value) && value >= min && value <= max ? value : fallback;
 }
 
-async function withinDeadline<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+async function withinDeadline<T>(
+  promise: Promise<T>,
+  timeoutMs: number,
+  onTimeout: () => Promise<unknown>,
+): Promise<T> {
   let timer: ReturnType<typeof setTimeout> | undefined;
   try {
     return await Promise.race([
       promise,
       new Promise<never>((_, reject) => {
-        timer = setTimeout(() => reject(new RenderTimeoutError()), timeoutMs);
+        timer = setTimeout(() => {
+          reject(new RenderTimeoutError());
+          void onTimeout().catch(() => undefined);
+        }, timeoutMs);
       }),
     ]);
   } finally {

@@ -10,10 +10,17 @@ export class RenderQueueClosedError extends Error {
   }
 }
 
+export class RenderQueueTimeoutError extends Error {
+  constructor() {
+    super("PDF render queue wait timed out");
+  }
+}
+
 type QueuedTask<T> = {
   task: () => Promise<T>;
   resolve: (value: T) => void;
   reject: (reason: unknown) => void;
+  timer: ReturnType<typeof setTimeout>;
 };
 
 /**
@@ -24,16 +31,27 @@ export class RenderGate {
   private active = 0;
   private closed = false;
   private readonly queued: QueuedTask<unknown>[] = [];
+  private startedTotal = 0;
+  private completedTotal = 0;
+  private failedTotal = 0;
+  private rejectedTotal = 0;
+  private queueTimeoutTotal = 0;
+  private totalDurationMs = 0;
+  private lastDurationMs = 0;
 
   constructor(
     readonly maxConcurrent: number,
     readonly maxQueued: number,
+    readonly queueTimeoutMs = 5_000,
   ) {
     if (!Number.isInteger(maxConcurrent) || maxConcurrent < 1) {
       throw new Error("maxConcurrent must be a positive integer");
     }
     if (!Number.isInteger(maxQueued) || maxQueued < 0) {
       throw new Error("maxQueued must be a non-negative integer");
+    }
+    if (!Number.isInteger(queueTimeoutMs) || queueTimeoutMs < 1) {
+      throw new Error("queueTimeoutMs must be a positive integer");
     }
   }
 
@@ -43,30 +61,74 @@ export class RenderGate {
       queued: this.queued.length,
       maxConcurrent: this.maxConcurrent,
       maxQueued: this.maxQueued,
+      queueTimeoutMs: this.queueTimeoutMs,
       accepting: !this.closed,
+      startedTotal: this.startedTotal,
+      completedTotal: this.completedTotal,
+      failedTotal: this.failedTotal,
+      rejectedTotal: this.rejectedTotal,
+      queueTimeoutTotal: this.queueTimeoutTotal,
+      lastDurationMs: this.lastDurationMs,
+      averageDurationMs:
+        this.completedTotal + this.failedTotal === 0
+          ? 0
+          : Math.round(this.totalDurationMs / (this.completedTotal + this.failedTotal)),
     };
   }
 
   run<T>(task: () => Promise<T>): Promise<T> {
-    if (this.closed) return Promise.reject(new RenderQueueClosedError());
+    if (this.closed) {
+      this.rejectedTotal += 1;
+      return Promise.reject(new RenderQueueClosedError());
+    }
     if (this.active < this.maxConcurrent) return this.start(task);
-    if (this.queued.length >= this.maxQueued) return Promise.reject(new RenderQueueFullError());
+    if (this.queued.length >= this.maxQueued) {
+      this.rejectedTotal += 1;
+      return Promise.reject(new RenderQueueFullError());
+    }
 
     return new Promise<T>((resolve, reject) => {
-      this.queued.push({ task, resolve, reject } as QueuedTask<unknown>);
+      const queuedTask = {
+        task,
+        resolve,
+        reject,
+        timer: setTimeout(() => {
+          const index = this.queued.indexOf(queuedTask as QueuedTask<unknown>);
+          if (index === -1) return;
+          this.queued.splice(index, 1);
+          this.queueTimeoutTotal += 1;
+          reject(new RenderQueueTimeoutError());
+        }, this.queueTimeoutMs),
+      } as QueuedTask<T>;
+      this.queued.push(queuedTask as QueuedTask<unknown>);
     });
   }
 
   close() {
     this.closed = true;
-    while (this.queued.length) this.queued.shift()?.reject(new RenderQueueClosedError());
+    while (this.queued.length) {
+      const task = this.queued.shift();
+      if (!task) continue;
+      clearTimeout(task.timer);
+      this.rejectedTotal += 1;
+      task.reject(new RenderQueueClosedError());
+    }
   }
 
   private async start<T>(task: () => Promise<T>): Promise<T> {
     this.active += 1;
+    this.startedTotal += 1;
+    const startedAt = performance.now();
     try {
-      return await task();
+      const result = await task();
+      this.completedTotal += 1;
+      return result;
+    } catch (error) {
+      this.failedTotal += 1;
+      throw error;
     } finally {
+      this.lastDurationMs = Math.round(performance.now() - startedAt);
+      this.totalDurationMs += this.lastDurationMs;
       this.active -= 1;
       this.drain();
     }
@@ -76,6 +138,7 @@ export class RenderGate {
     if (this.closed || this.active >= this.maxConcurrent) return;
     const next = this.queued.shift();
     if (!next) return;
+    clearTimeout(next.timer);
     void this.start(next.task).then(next.resolve, next.reject);
   }
 }

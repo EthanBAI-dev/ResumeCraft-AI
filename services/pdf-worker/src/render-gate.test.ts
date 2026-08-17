@@ -1,5 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
-import { RenderGate, RenderQueueClosedError, RenderQueueFullError } from "./render-gate.js";
+import {
+  RenderGate,
+  RenderQueueClosedError,
+  RenderQueueFullError,
+  RenderQueueTimeoutError,
+} from "./render-gate.js";
 
 describe("RenderGate", () => {
   it("限制并发并在空位出现时按先进先出执行", async () => {
@@ -40,5 +45,29 @@ describe("RenderGate", () => {
     gate.close();
     await expect(queued).rejects.toBeInstanceOf(RenderQueueClosedError);
     await expect(gate.run(async () => undefined)).rejects.toBeInstanceOf(RenderQueueClosedError);
+  });
+
+  it("排队超时后移除任务，不在空位出现时偷偷执行", async () => {
+    vi.useFakeTimers();
+    try {
+      const gate = new RenderGate(1, 1, 100);
+      let releaseActive!: () => void;
+      const active = gate.run(
+        () => new Promise<void>((resolve) => (releaseActive = () => resolve())),
+      );
+      const queuedTask = vi.fn(async () => undefined);
+      const queued = gate.run(queuedTask);
+      const timedOut = expect(queued).rejects.toBeInstanceOf(RenderQueueTimeoutError);
+
+      await vi.advanceTimersByTimeAsync(100);
+      await timedOut;
+      expect(gate.snapshot).toMatchObject({ active: 1, queued: 0, queueTimeoutTotal: 1 });
+
+      releaseActive();
+      await active;
+      expect(queuedTask).not.toHaveBeenCalled();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
