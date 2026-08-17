@@ -63,7 +63,7 @@ ResumeCraft 的逐日工程记录。**只写真实发生的事** —— 未开�
 | 11  | [本地优先导出：PDF 打印、DOCX 与 JSON](docs/devlog/day-11-local-export.md) | ✅   |
 | 12  | [PDF Worker：同一份 DOM 进入 Chromium](docs/devlog/day-12-pdf-worker.md)   | ✅   |
 | 13  | [Chromium 实例池化与并发控制](docs/devlog/day-13-render-queue.md)          | ✅   |
-| 14  | [文本回读评分的纯算法层](docs/devlog/day-14-readback-foundation.md)        | 🚧   |
+| 14  | [PDF 文本回读自检](docs/devlog/day-14-readback-foundation.md)              | ✅   |
 | 15  | DOCX / PNG / JSON Resume 互转                                              | ⬜   |
 
 ### P4 · AI 引擎（6 天）

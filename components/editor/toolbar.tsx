@@ -118,8 +118,27 @@ export function Toolbar({
         onClick={async () => {
           const id = toast.loading("正在生成高保真 PDF…");
           try {
-            await exportResumePdf(resume);
-            toast.success("PDF 已开始下载", { id });
+            const { readback } = await exportResumePdf(resume);
+            if (!readback) {
+              toast.success("PDF 已开始下载；文本检测暂不可用", { id });
+            } else if (readback.passes) {
+              toast.success(`PDF 已开始下载；文本可读性 ${Math.round(readback.coverage * 100)}%`, {
+                id,
+              });
+            } else {
+              const hasMissingText = readback.missing.length > 0;
+              toast.warning(
+                hasMissingText
+                  ? `PDF 已开始下载；检测到 ${readback.missing.length} 项文本可能无法被 ATS 读取`
+                  : "PDF 已开始下载；文本完整，但阅读顺序可能异常",
+                {
+                  id,
+                  description: hasMissingText
+                    ? `缺失示例：${readback.missing.slice(0, 3).join("；")}`
+                    : `阅读顺序得分：${Math.round(readback.orderScore * 100)}%`,
+                },
+              );
+            }
           } catch (error) {
             if (error instanceof PdfWorkerUnavailableError) {
               toast.info("PDF Worker 尚未配置，已打开系统打印", { id });

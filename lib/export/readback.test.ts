@@ -5,10 +5,22 @@ import { collectResumeTextAnchors, evaluatePdfReadback, normalizeText } from "./
 describe("PDF 文本回读", () => {
   it("NFKC 与空白归一化后仍能比对", () => {
     expect(normalizeText("Ｊａｖａ　\n Spring  Boot")).toBe("java spring boot");
+    expect(normalizeText("个 人 简 介")).toBe("个人简介");
   });
 
   it("完整文本能通过覆盖率与阅读顺序校验", () => {
-    const text = collectResumeTextAnchors(sampleResume).join("\n");
+    const anchors = collectResumeTextAnchors(sampleResume);
+    const summary = sampleResume.sections.summary;
+    expect(summary.type).toBe("summary");
+    if (summary.type !== "summary") throw new Error("样例 summary 区块类型错误");
+    expect(anchors.slice(0, 2)).toEqual([summary.name, summary.content]);
+    expect(anchors.indexOf(sampleResume.basics.name)).toBeGreaterThan(
+      anchors.indexOf(sampleResume.sections.project.name),
+    );
+    expect(anchors).toContain("至今");
+    expect(anchors).not.toContain("present");
+    expect(anchors).not.toContain(sampleResume.basics.url);
+    const text = anchors.join("\n");
     const report = evaluatePdfReadback(sampleResume, text);
     expect(report.coverage).toBe(1);
     expect(report.orderScore).toBe(1);

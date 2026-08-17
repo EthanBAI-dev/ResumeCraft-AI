@@ -3,6 +3,8 @@
 import type { ResumeData } from "@/lib/schema";
 import { downloadBlob } from "./client";
 import { resumeFileName } from "./filename";
+import { extractPdfText } from "./pdf-text";
+import { evaluatePdfReadback, type PdfReadbackReport } from "./readback";
 
 export class PdfWorkerUnavailableError extends Error {
   constructor() {
@@ -20,7 +22,9 @@ export class PdfWorkerBusyError extends Error {
  * 预览的 .resume-root 是唯一真相。导出时克隆它和同源 CSS，而不是重建第二套 HTML；
  * 仅剥离编辑态的拖拽手柄，保留用户自定义 CSS 与分页结构。
  */
-export async function exportResumePdf(resume: ResumeData) {
+export async function exportResumePdf(
+  resume: ResumeData,
+): Promise<{ readback: PdfReadbackReport | null }> {
   await document.fonts?.ready;
   const root = document.querySelector<HTMLElement>(".resume-root");
   if (!root) throw new Error("未找到可导出的简历预览");
@@ -41,6 +45,14 @@ export async function exportResumePdf(resume: ResumeData) {
   const blob = await response.blob();
   if (blob.type !== "application/pdf") throw new Error("PDF worker 返回了无效文件");
   downloadBlob(blob, resumeFileName(resume.basics.name, "pdf"));
+
+  try {
+    return { readback: evaluatePdfReadback(resume, await extractPdfText(blob)) };
+  } catch (error) {
+    // PDF 已成功下载；回读属于质量门禁，解析器本身异常时不能阻断用户拿到文件。
+    console.warn("[resumecraft] PDF 文本回读失败", error);
+    return { readback: null };
+  }
 }
 
 export function serializeResumeRoot(root: HTMLElement, cssText: string) {

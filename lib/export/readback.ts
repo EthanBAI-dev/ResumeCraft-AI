@@ -1,5 +1,6 @@
 import type { ResumeData, Section } from "@/lib/schema";
 import { flattenLayout } from "@/lib/layout/operations";
+import { formatDate } from "@/components/preview/formatters";
 
 export type PdfReadbackReport = {
   expectedAnchors: number;
@@ -21,22 +22,23 @@ export function collectResumeTextAnchors(resume: ResumeData): string[] {
     if (trimmed && normalizeText(trimmed).length >= 2) anchors.push(trimmed);
   };
 
-  add(resume.basics.name);
-  add(resume.basics.headline);
-  add(resume.basics.phone);
-  add(resume.basics.email);
-  add(resume.basics.location);
-  add(resume.basics.url);
-  resume.basics.customFields.forEach((field) => add(field.value));
-
   const seen = new Set<string>();
   for (const id of flattenLayout(resume.layout)) {
-    if (id === "basics" || seen.has(id)) continue;
+    if (seen.has(id)) continue;
     seen.add(id);
+    if (id === "basics") {
+      add(resume.basics.name);
+      add(resume.basics.headline);
+      add(resume.basics.phone);
+      add(resume.basics.email);
+      add(resume.basics.location);
+      resume.basics.customFields.forEach((field) => add(field.value));
+      continue;
+    }
     const section = resume.sections[id];
     if (!section?.visible) continue;
     add(section.name);
-    collectSectionAnchors(section).forEach(add);
+    collectSectionAnchors(section, resume.metadata.locale).forEach(add);
   }
 
   return anchors;
@@ -74,23 +76,85 @@ export function evaluatePdfReadback(resume: ResumeData, extractedText: string): 
 }
 
 export function normalizeText(value: string): string {
-  return value
-    .normalize("NFKC")
-    .toLocaleLowerCase("zh-CN")
-    .replace(/[\u200B-\u200D\uFEFF]/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
+  return (
+    value
+      .normalize("NFKC")
+      .toLocaleLowerCase("zh-CN")
+      .replace(/[\u200B-\u200D\uFEFF]/g, "")
+      // Chromium 会把带 letter-spacing 的中文标题回读为“工 作 经 历”。
+      // 只消除相邻汉字间的人工空白，保留英文单词和字段之间的真实边界。
+      .replace(/([\p{Script=Han}])\s+(?=[\p{Script=Han}])/gu, "$1")
+      .replace(/\s+/g, " ")
+      .trim()
+  );
 }
 
-function collectSectionAnchors(section: Section): string[] {
+function collectSectionAnchors(
+  section: Section,
+  locale: ResumeData["metadata"]["locale"],
+): string[] {
   if (section.type === "summary") return [section.content];
-  return section.items
-    .filter((item) => item.visible)
-    .flatMap((item) =>
-      Object.entries(item)
-        .filter(([key, value]) => key !== "id" && key !== "visible" && key !== "url" && value)
-        .flatMap(([, value]) => (Array.isArray(value) ? value : [String(value)])),
-    );
+
+  switch (section.type) {
+    case "experience":
+      return section.items
+        .filter((item) => item.visible)
+        .flatMap((item) => [
+          item.company,
+          formatDate(item.startDate, locale),
+          formatDate(item.endDate, locale),
+          item.position,
+          item.location,
+          item.summary,
+          ...item.highlights,
+          ...item.tech,
+        ]);
+    case "project":
+      return section.items
+        .filter((item) => item.visible)
+        .flatMap((item) => [
+          item.name,
+          formatDate(item.startDate, locale),
+          formatDate(item.endDate, locale),
+          item.role,
+          item.repo || item.url,
+          item.summary,
+          ...item.highlights,
+          ...item.tech,
+        ]);
+    case "education":
+      return section.items
+        .filter((item) => item.visible)
+        .flatMap((item) => [
+          item.school,
+          formatDate(item.startDate, locale),
+          formatDate(item.endDate, locale),
+          item.degree,
+          item.major,
+          item.location,
+          item.score,
+          ...item.highlights,
+        ]);
+    case "skill":
+      return section.items
+        .filter((item) => item.visible)
+        .flatMap((item) => [item.name, ...item.keywords]);
+    case "certificate":
+      return section.items
+        .filter((item) => item.visible)
+        .flatMap((item) => [item.name, formatDate(item.date, locale), item.issuer, item.summary]);
+    case "custom":
+      return section.items
+        .filter((item) => item.visible)
+        .flatMap((item) => [
+          item.name,
+          formatDate(item.startDate, locale),
+          formatDate(item.endDate, locale),
+          item.subtitle,
+          item.summary,
+          ...item.highlights,
+        ]);
+  }
 }
 
 function uniqueAnchors(anchors: string[]) {
