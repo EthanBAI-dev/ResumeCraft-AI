@@ -6,6 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import type { AnyItem, Section } from "@/lib/schema";
 import { useResumeStore, useSection } from "@/lib/store/resume-store";
 import { DebouncedTextarea, TagsField, TextAreaField, TextField } from "./debounced-field";
+import { AiHighlightReview } from "./ai-highlight-review";
 import { ItemLayoutEditor } from "./item-layout-editor";
 import { HAS_HIGHLIGHTS, ITEM_FIELDS, ITEM_TITLE_KEYS, type FieldDef } from "./item-fields";
 
@@ -162,6 +163,8 @@ function ItemCard({
         <>
           <Separator className="my-3" />
           <HighlightsField
+            sectionId={section.id}
+            itemId={item.id}
             values={(record.highlights as string[]) ?? []}
             onCommit={(v) => set("highlights", v)}
           />
@@ -227,9 +230,13 @@ function ItemField({
  * UI 上也必须能单独指向某一条。
  */
 function HighlightsField({
+  sectionId,
+  itemId,
   values,
   onCommit,
 }: {
+  sectionId: string;
+  itemId: string;
   values: string[];
   onCommit: (values: string[]) => void;
 }) {
@@ -242,6 +249,13 @@ function HighlightsField({
           添加要点
         </Button>
       </div>
+
+      <AiHighlightReview
+        sectionId={sectionId}
+        itemId={itemId}
+        values={values}
+        onCommit={onCommit}
+      />
 
       {values.map((value, index) => (
         <div key={index} className="flex items-start gap-2">
