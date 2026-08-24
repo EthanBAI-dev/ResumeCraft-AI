@@ -110,6 +110,7 @@ export function createEmptyResume(): ResumeData {
     layout,
     metadata: {
       template: "modern",
+      itemLayouts: {},
       page: { format: "a4", margin: 16, showPageNumbers: false, columnRatio: 0.66 },
       theme: { primary: "#2563eb", text: "#18181b", muted: "#71717a", background: "#ffffff" },
       typography: {

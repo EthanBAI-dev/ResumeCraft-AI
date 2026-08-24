@@ -6,6 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import type { AnyItem, Section } from "@/lib/schema";
 import { useResumeStore, useSection } from "@/lib/store/resume-store";
 import { DebouncedTextarea, TagsField, TextAreaField, TextField } from "./debounced-field";
+import { ItemLayoutEditor } from "./item-layout-editor";
 import { HAS_HIGHLIGHTS, ITEM_FIELDS, ITEM_TITLE_KEYS, type FieldDef } from "./item-fields";
 
 export function SectionEditor({ sectionId }: { sectionId: string }) {
@@ -43,6 +44,10 @@ export function SectionEditor({ sectionId }: { sectionId: string }) {
         />
       ) : (
         <>
+          {section.type !== "skill" ? (
+            <ItemLayoutEditor sectionId={section.id} sectionType={section.type} />
+          ) : null}
+
           <div className="space-y-3">
             {section.items.map((item, index) => (
               <ItemCard

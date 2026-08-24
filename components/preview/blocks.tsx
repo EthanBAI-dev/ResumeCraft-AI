@@ -1,6 +1,14 @@
-import { memo } from "react";
-import type { Basics, Metadata, Section } from "@/lib/schema";
-import { isEmptyItem } from "@/lib/schema";
+import { memo, type ReactNode } from "react";
+import {
+  DEFAULT_ITEM_LAYOUT,
+  isEmptyItem,
+  type Basics,
+  type ItemLayoutConfig,
+  type ItemLayoutField,
+  type Metadata,
+  type Section,
+} from "@/lib/schema";
+import { resolveItemLayoutAtoms, type AtomicLayoutType } from "@/lib/layout/item-layout";
 import { formatDateRange, joinNonEmpty } from "./formatters";
 
 /**
@@ -38,51 +46,124 @@ function Tags({ items }: { items: string[] }) {
   );
 }
 
-export const BasicsBlock = memo(function BasicsBlock({ basics }: { basics: Basics }) {
-  const contacts = [
-    basics.phone,
-    basics.email,
-    basics.location,
-    ...basics.customFields.map((f) => f.value),
-  ].filter(Boolean);
+function AtomicItem({
+  type,
+  layout,
+  fields,
+}: {
+  type: AtomicLayoutType;
+  layout: ItemLayoutConfig;
+  fields: Partial<Record<ItemLayoutField, ReactNode>>;
+}) {
+  const content = <AtomicGrid type={type} layout={layout} fields={fields} />;
+  return content ? <article className="resume-item">{content}</article> : null;
+}
 
-  if (!basics.name && contacts.length === 0 && !basics.headline) return null;
+function AtomicGrid({
+  type,
+  layout,
+  fields,
+}: {
+  type: AtomicLayoutType;
+  layout: ItemLayoutConfig;
+  fields: Partial<Record<ItemLayoutField, ReactNode>>;
+}) {
+  const atoms = resolveItemLayoutAtoms(type, layout).filter(
+    (atom) => atom.visible && hasContent(fields[atom.field]),
+  );
+  if (atoms.length === 0) return null;
+
+  return (
+    <div className="resume-item__grid" data-layout={layout.preset}>
+      {atoms.map((atom) => (
+        <div
+          key={atom.field}
+          className={`resume-item__atom resume-item__atom--${atom.field}`}
+          data-item-slot={atom.field}
+          data-span={atom.span}
+          style={{
+            gridColumn: atom.breakBefore ? `1 / span ${atom.span}` : `span ${atom.span}`,
+            textAlign: atom.align,
+          }}
+        >
+          {fields[atom.field]}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function hasContent(node: ReactNode) {
+  return node !== null && node !== undefined && node !== "" && node !== false;
+}
+
+export const BasicsBlock = memo(function BasicsBlock({
+  basics,
+  layout,
+}: {
+  basics: Basics;
+  layout: ItemLayoutConfig;
+}) {
+  const customFields = basics.customFields.filter((field) => field.value.trim());
+  const photo = basics.photo.visible && basics.photo.url;
+  if (
+    !basics.name &&
+    !basics.headline &&
+    !basics.phone &&
+    !basics.email &&
+    !basics.location &&
+    !basics.url &&
+    !photo &&
+    customFields.length === 0
+  ) {
+    return null;
+  }
 
   return (
     <header className="resume-section resume-basics">
-      <div style={{ display: "flex", alignItems: "center", gap: "1em" }}>
-        {basics.photo.visible && basics.photo.url ? (
-          // 预览里用普通 img：next/image 的优化管线在 PDF Worker 的独立渲染中不可用
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={basics.photo.url}
-            alt=""
-            width={basics.photo.size}
-            height={basics.photo.size}
-            style={{
-              width: basics.photo.size,
-              height: basics.photo.size,
-              objectFit: "cover",
-              borderRadius: basics.photo.rounded ? "50%" : 4,
-              flexShrink: 0,
-            }}
-          />
-        ) : null}
-        <div style={{ minWidth: 0 }}>
-          {basics.name ? <div className="resume-basics__name">{basics.name}</div> : null}
-          {basics.headline ? <div className="resume-muted">{basics.headline}</div> : null}
-        </div>
-      </div>
-      {contacts.length > 0 ? (
-        <div
-          className="resume-basics__contacts resume-muted"
-          style={{ display: "flex", flexWrap: "wrap", gap: "0.35em 0.9em", marginTop: "0.5em" }}
-        >
-          {contacts.map((c, i) => (
-            <span key={i}>{c}</span>
-          ))}
-        </div>
-      ) : null}
+      <AtomicGrid
+        type="basics"
+        layout={layout}
+        fields={{
+          photo: photo ? (
+            // 预览里用普通 img：next/image 的优化管线在 PDF Worker 的独立渲染中不可用
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={basics.photo.url}
+              alt=""
+              width={basics.photo.size}
+              height={basics.photo.size}
+              style={{
+                width: basics.photo.size,
+                maxWidth: "100%",
+                height: "auto",
+                aspectRatio: "1",
+                objectFit: "cover",
+                borderRadius: basics.photo.rounded ? "50%" : 4,
+              }}
+            />
+          ) : null,
+          primary: basics.name ? <div className="resume-basics__name">{basics.name}</div> : null,
+          headline: basics.headline ? <div className="resume-muted">{basics.headline}</div> : null,
+          phone: basics.phone ? <span className="resume-muted">{basics.phone}</span> : null,
+          email: basics.email ? <span className="resume-muted">{basics.email}</span> : null,
+          location: basics.location ? (
+            <span className="resume-muted">{basics.location}</span>
+          ) : null,
+          url: basics.url ? <span className="resume-muted">{basics.url}</span> : null,
+          customFields:
+            customFields.length > 0 ? (
+              <div
+                className="resume-basics__contacts resume-muted"
+                style={{ display: "flex", flexWrap: "wrap", gap: "0.35em 0.9em" }}
+              >
+                {customFields.map((field) => (
+                  <span key={field.id}>{field.value}</span>
+                ))}
+              </div>
+            ) : null,
+        }}
+      />
     </header>
   );
 });
@@ -90,7 +171,8 @@ export const BasicsBlock = memo(function BasicsBlock({ basics }: { basics: Basic
 export const SectionBlock = memo(function SectionBlock({
   section,
   locale,
-}: { section: Section } & Ctx) {
+  itemLayouts,
+}: { section: Section; itemLayouts: Metadata["itemLayouts"] } & Ctx) {
   if (!section.visible) return null;
 
   if (section.type === "summary") {
@@ -118,7 +200,13 @@ export const SectionBlock = memo(function SectionBlock({
         }
       >
         {items.map((item) => (
-          <ItemBlock key={item.id} section={section} item={item} locale={locale} />
+          <ItemBlock
+            key={item.id}
+            section={section}
+            item={item}
+            locale={locale}
+            layout={itemLayouts[section.id] ?? DEFAULT_ITEM_LAYOUT}
+          />
         ))}
       </div>
     </section>
@@ -129,58 +217,73 @@ function ItemBlock({
   section,
   item,
   locale,
-}: { section: Exclude<Section, { type: "summary" }>; item: unknown } & Ctx) {
+  layout,
+}: {
+  section: Exclude<Section, { type: "summary" }>;
+  item: unknown;
+  layout: ItemLayoutConfig;
+} & Ctx) {
   switch (section.type) {
     case "experience": {
       const it = item as (typeof section.items)[number];
+      const date = formatDateRange(it.startDate, it.endDate, locale);
+      const secondary = joinNonEmpty([it.position, it.location]);
       return (
-        <article className="resume-item">
-          <div className="resume-item__head">
-            <span className="resume-item__title">{it.company}</span>
-            <span className="resume-item__meta">
-              {formatDateRange(it.startDate, it.endDate, locale)}
-            </span>
-          </div>
-          <div className="resume-item__meta">{joinNonEmpty([it.position, it.location])}</div>
-          {it.summary ? <div>{it.summary}</div> : null}
-          <Highlights items={it.highlights} />
-          <Tags items={it.tech} />
-        </article>
+        <AtomicItem
+          type="experience"
+          layout={layout}
+          fields={{
+            primary: <span className="resume-item__title">{it.company}</span>,
+            secondary: secondary ? <span className="resume-item__meta">{secondary}</span> : null,
+            date: date ? <span className="resume-item__meta">{date}</span> : null,
+            summary: it.summary,
+            highlights: it.highlights.some((value) => value.trim()) ? (
+              <Highlights items={it.highlights} />
+            ) : null,
+            tags: it.tech.length > 0 ? <Tags items={it.tech} /> : null,
+          }}
+        />
       );
     }
     case "project": {
       const it = item as (typeof section.items)[number];
+      const date = formatDateRange(it.startDate, it.endDate, locale);
+      const secondary = joinNonEmpty([it.role, it.repo || it.url]);
       return (
-        <article className="resume-item">
-          <div className="resume-item__head">
-            <span className="resume-item__title">{it.name}</span>
-            <span className="resume-item__meta">
-              {formatDateRange(it.startDate, it.endDate, locale)}
-            </span>
-          </div>
-          <div className="resume-item__meta">{joinNonEmpty([it.role, it.repo || it.url])}</div>
-          {it.summary ? <div>{it.summary}</div> : null}
-          <Highlights items={it.highlights} />
-          <Tags items={it.tech} />
-        </article>
+        <AtomicItem
+          type="project"
+          layout={layout}
+          fields={{
+            primary: <span className="resume-item__title">{it.name}</span>,
+            secondary: secondary ? <span className="resume-item__meta">{secondary}</span> : null,
+            date: date ? <span className="resume-item__meta">{date}</span> : null,
+            summary: it.summary,
+            highlights: it.highlights.some((value) => value.trim()) ? (
+              <Highlights items={it.highlights} />
+            ) : null,
+            tags: it.tech.length > 0 ? <Tags items={it.tech} /> : null,
+          }}
+        />
       );
     }
     case "education": {
       const it = item as (typeof section.items)[number];
+      const date = formatDateRange(it.startDate, it.endDate, locale);
+      const secondary = joinNonEmpty([it.degree, it.major, it.location]);
       return (
-        <article className="resume-item">
-          <div className="resume-item__head">
-            <span className="resume-item__title">{it.school}</span>
-            <span className="resume-item__meta">
-              {formatDateRange(it.startDate, it.endDate, locale)}
-            </span>
-          </div>
-          <div className="resume-item__meta">
-            {joinNonEmpty([it.degree, it.major, it.location])}
-          </div>
-          {it.score ? <div className="resume-item__meta">{it.score}</div> : null}
-          <Highlights items={it.highlights} />
-        </article>
+        <AtomicItem
+          type="education"
+          layout={layout}
+          fields={{
+            primary: <span className="resume-item__title">{it.school}</span>,
+            secondary: secondary ? <span className="resume-item__meta">{secondary}</span> : null,
+            date: date ? <span className="resume-item__meta">{date}</span> : null,
+            tertiary: it.score ? <span className="resume-item__meta">{it.score}</span> : null,
+            highlights: it.highlights.some((value) => value.trim()) ? (
+              <Highlights items={it.highlights} />
+            ) : null,
+          }}
+        />
       );
     }
     case "skill": {
@@ -198,15 +301,18 @@ function ItemBlock({
     }
     case "certificate": {
       const it = item as (typeof section.items)[number];
+      const date = formatDateRange(it.date, "", locale);
       return (
-        <article className="resume-item">
-          <div className="resume-item__head">
-            <span className="resume-item__title">{it.name}</span>
-            <span className="resume-item__meta">{formatDateRange(it.date, "", locale)}</span>
-          </div>
-          <div className="resume-item__meta">{it.issuer}</div>
-          {it.summary ? <div>{it.summary}</div> : null}
-        </article>
+        <AtomicItem
+          type="certificate"
+          layout={layout}
+          fields={{
+            primary: <span className="resume-item__title">{it.name}</span>,
+            secondary: it.issuer ? <span className="resume-item__meta">{it.issuer}</span> : null,
+            date: date ? <span className="resume-item__meta">{date}</span> : null,
+            summary: it.summary,
+          }}
+        />
       );
     }
     case "custom":
@@ -219,18 +325,23 @@ function ItemBlock({
         endDate?: string;
         name?: string;
       };
+      const date = formatDateRange(it.startDate ?? "", it.endDate ?? "", locale);
       return (
-        <article className="resume-item">
-          <div className="resume-item__head">
-            <span className="resume-item__title">{it.name}</span>
-            <span className="resume-item__meta">
-              {formatDateRange(it.startDate ?? "", it.endDate ?? "", locale)}
-            </span>
-          </div>
-          {it.subtitle ? <div className="resume-item__meta">{it.subtitle}</div> : null}
-          {it.summary ? <div>{it.summary}</div> : null}
-          <Highlights items={it.highlights ?? []} />
-        </article>
+        <AtomicItem
+          type="custom"
+          layout={layout}
+          fields={{
+            primary: <span className="resume-item__title">{it.name}</span>,
+            secondary: it.subtitle ? (
+              <span className="resume-item__meta">{it.subtitle}</span>
+            ) : null,
+            date: date ? <span className="resume-item__meta">{date}</span> : null,
+            summary: it.summary,
+            highlights: (it.highlights ?? []).some((value) => value.trim()) ? (
+              <Highlights items={it.highlights ?? []} />
+            ) : null,
+          }}
+        />
       );
     }
   }

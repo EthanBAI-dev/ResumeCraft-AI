@@ -6,6 +6,7 @@ import {
   EmailField,
   EndDateField,
   ExperienceItemSchema,
+  ItemLayoutConfigSchema,
   ResumeDataSchema,
   SectionSchema,
   UrlField,
@@ -70,6 +71,22 @@ describe("item schema", () => {
   it("isEmptyItem 识别刚创建的空条目", () => {
     expect(isEmptyItem(createItem("experience"))).toBe(true);
     expect(isEmptyItem({ ...createItem("experience"), company: "A" } as never)).toBe(false);
+  });
+});
+
+describe("item layout schema", () => {
+  it("旧简历没有条目布局时自动补为空配置", () => {
+    const legacy = structuredClone(createEmptyResume()) as unknown as {
+      metadata: Record<string, unknown>;
+    };
+    delete legacy.metadata.itemLayouts;
+    expect(parseResume(legacy).metadata.itemLayouts).toEqual({});
+  });
+
+  it("限制栏宽，避免 A4 条目被配置成不可读的极窄列", () => {
+    expect(ItemLayoutConfigSchema.parse({}).preset).toBe("split");
+    expect(() => ItemLayoutConfigSchema.parse({ primaryWidth: 90 })).toThrow();
+    expect(() => ItemLayoutConfigSchema.parse({ dateWidth: 8 })).toThrow();
   });
 });
 

@@ -11,6 +11,7 @@ import { useEditorStore } from "@/lib/store/editor-store";
 import { flattenLayout } from "@/lib/layout/operations";
 import { BasicsForm } from "./basics-form";
 import { DesignPanel } from "./design-panel";
+import { ItemLayoutEditor } from "./item-layout-editor";
 import { SectionEditor } from "./section-editor";
 
 const ADDABLE: SectionType[] = [
@@ -62,7 +63,10 @@ function ContentSections() {
   return (
     <>
       <CollapsibleBlock id="basics" title="基本信息" icon={<User className="size-4" />}>
-        <BasicsForm />
+        <div className="space-y-4">
+          <BasicsForm />
+          <ItemLayoutEditor sectionId="basics" sectionType="basics" />
+        </div>
       </CollapsibleBlock>
 
       {orderedIds

@@ -8,6 +8,8 @@ node_modules/
 out/
 build/
 dist/
+.vinext/
+.wrangler/
 *.tsbuildinfo
 
 # env

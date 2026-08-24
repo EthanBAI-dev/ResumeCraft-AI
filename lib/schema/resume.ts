@@ -30,8 +30,60 @@ export const BasicsSchema = z.object({
 /** layout[页][栏][位置] = sectionId，栏位约定 0=主栏 1=侧栏 */
 export const LayoutSchema = z.array(z.array(z.array(z.string())));
 
+export const ItemLayoutPresetSchema = z.enum(["inline", "split", "stacked", "custom"]);
+export const ItemLayoutFieldSchema = z.enum([
+  "primary",
+  "secondary",
+  "date",
+  "summary",
+  "tertiary",
+  "highlights",
+  "tags",
+  "headline",
+  "phone",
+  "email",
+  "location",
+  "url",
+  "photo",
+  "customFields",
+]);
+export const ItemLayoutAlignSchema = z.enum(["left", "center", "right"]);
+
+export const ItemLayoutAtomSchema = z.object({
+  field: ItemLayoutFieldSchema,
+  /** 12 栅格中占用的列数；行高始终由内容自然撑开。 */
+  span: z.number().int().min(2).max(12),
+  /** 显式从新行开始。false 时由栅格自动填充当前行的剩余空间。 */
+  breakBefore: z.boolean().default(false),
+  align: ItemLayoutAlignSchema.default("left"),
+  visible: z.boolean().default(true),
+});
+
+/**
+ * 条目内部布局按 sectionId 保存，而不是写进内容条目本身。
+ * 这样切换布局、隐藏某一行都不会破坏原始简历数据，也能让同一区块的条目保持一致。
+ */
+export const ItemLayoutConfigSchema = z.object({
+  preset: ItemLayoutPresetSchema.default("split"),
+  /** 字段原子按此数组顺序进入 DOM 和 PDF 阅读顺序。 */
+  atoms: z.array(ItemLayoutAtomSchema).default([]),
+  /** 旧版预设参数，保留用于无损迁移尚未原子化的本地草稿。 */
+  primaryWidth: z.number().min(30).max(70).default(55),
+  dateWidth: z.number().min(16).max(32).default(24),
+  hidden: z.array(ItemLayoutFieldSchema).default([]),
+});
+
+export const DEFAULT_ITEM_LAYOUT = {
+  preset: "split",
+  atoms: [],
+  primaryWidth: 55,
+  dateWidth: 24,
+  hidden: [],
+} satisfies z.infer<typeof ItemLayoutConfigSchema>;
+
 export const MetadataSchema = z.object({
   template: z.string().default("modern"),
+  itemLayouts: z.record(z.string(), ItemLayoutConfigSchema).default({}),
   page: z.object({
     format: z.enum(["a4", "letter"]).default("a4"),
     margin: z.number().min(8).max(40).default(16), // mm
@@ -70,6 +122,11 @@ export const ResumeDataSchema = z.object({
 export type Basics = z.infer<typeof BasicsSchema>;
 export type CustomField = z.infer<typeof CustomFieldSchema>;
 export type Metadata = z.infer<typeof MetadataSchema>;
+export type ItemLayoutConfig = z.infer<typeof ItemLayoutConfigSchema>;
+export type ItemLayoutAtom = z.infer<typeof ItemLayoutAtomSchema>;
+export type ItemLayoutAlign = z.infer<typeof ItemLayoutAlignSchema>;
+export type ItemLayoutField = z.infer<typeof ItemLayoutFieldSchema>;
+export type ItemLayoutPreset = z.infer<typeof ItemLayoutPresetSchema>;
 export type ResumeData = z.infer<typeof ResumeDataSchema>;
 
 /** 当前简历里 layout 允许引用的全部 id（内容区块 + 保留 id） */
