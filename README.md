@@ -4,9 +4,9 @@
 
 免费、开源、本地优先的简历工作台。**不注册也能写简历、调排版和导出；AI 可选，用自己的 Key。**
 
-[快速开始](#快速开始) · [模板预览](#六套模板完整页预览) · [使用手册](docs/user-guide.md) · [简历导入 Skill](docs/import-skill.md) · [部署指南](docs/deployment.md)
+[在线体验](https://resumecraft-ethan.vercel.app) · [开始编辑](https://resumecraft-ethan.vercel.app/builder) · [快速开始](#快速开始) · [模板预览](#六套模板完整页预览) · [使用手册](docs/user-guide.md) · [简历导入 Skill](docs/import-skill.md) · [部署指南](docs/deployment.md)
 
-> 当前仓库包含可运行的编辑器和导入 Skill。尚未提供经验证的公共演示站点；请本地运行或自行部署。无账号、无云端简历、无公共 AI 额度，不以关注或付费作为导出条件。
+> 公共体验站已部署至 Vercel，当前生产分支为 `codex/vercel-release`。无账号、无云端简历、无公共 AI 额度，不以关注或付费作为导出条件。体验站暂未部署 PDF Worker：PDF 使用系统打印保存，PNG 与 Worker 导出校验暂不可用。
 
 ## 六套模板，完整页预览
 

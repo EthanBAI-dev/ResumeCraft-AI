@@ -4,7 +4,16 @@
 
 ## Vercel 首版
 
-当前发布候选使用 `codex/vercel-release` 分支。远端 `main` 另有 Sites 部署与旧版 AI 审阅提交，因此本次不覆盖或强推 `main`。导入 Vercel 时选择发布分支；上线前确认 Production Branch 也是该分支，否则可能部署到旧版本。仓库已提供 `vercel.json` 和 Node.js 24 版本约束，仍需账户登录与线上构建验收；配置文件存在不代表网站已经上线。
+当前生产使用 `codex/vercel-release` 分支。远端 `main` 另有 Sites 部署与旧版 AI 审阅提交，因此本次不覆盖或强推 `main`。Vercel 的 Production Branch 已设为发布分支，后续向该分支推送会触发生产部署。仓库已提供 `vercel.json` 和 Node.js 24 版本约束。
+
+### 2026-10-10 首次上线记录
+
+- 公共站点：[resumecraft-ethan.vercel.app](https://resumecraft-ethan.vercel.app)，[直接编辑](https://resumecraft-ethan.vercel.app/builder)。
+- Vercel 项目：`aiai6/resumecraft-ai`；首个应用提交 `3654e61`，生产部署状态 Ready。
+- 本地 162 项测试、lint、build、typecheck、密钥启发式扫描通过；GitHub CI 也通过。
+- 无登录 HTTP 检查：首页、编辑器、隐私页均为 200；AI 状态返回 `configured: false, mode: byok`，合法但无 Key 的请求返回 401，未调用付费模型。
+- 浏览器冒烟：首次示例与七步引导正常，切换女生头像与北欧模板后刷新仍保留，未观察到控制台错误。
+- 未添加站长模型 Key，未部署 PDF Worker，未购买域名或升级付费方案；使用免费 `.vercel.app` 子域名。真实 AI 调用、跨实例防滥用、手机端与各类导出仍需按下方清单分别验收，不能把此次冒烟视为全部功能验收。
 
 本文平台说明在 2026-10-10 对照官方 [Next.js 部署](https://vercel.com/docs/frameworks/full-stack/nextjs)、[Node.js 版本](https://vercel.com/docs/functions/runtimes/node-js/node-js-versions)、[Hobby 范围](https://vercel.com/docs/plans/hobby) 核对。限额和方案可能变化，发布时仍需复核，不把固定免费额度写进产品承诺。
 
@@ -29,7 +38,7 @@
 
 本地测试通过不等于线上验收完成。此清单仅用于验收，GitHub 提交和 Vercel 实际部署状态应分别核实。
 
-Vercel Hobby 有资源额度及个人非商业使用限制，不是无限免费托管。商业引流/业务用途需对照官方政策判断，不能因为网站不收费就默认符合 Hobby 条件。参考 [Hobby 说明](https://vercel.com/docs/plans/hobby)。发布时由账户所有者确认用途和方案；本次没有创建托管项目或发布网站。
+Vercel Hobby 有资源额度及个人非商业使用限制，不是无限免费托管。商业引流/业务用途需对照官方政策判断，不能因为网站不收费就默认符合 Hobby 条件。参考 [Hobby 说明](https://vercel.com/docs/plans/hobby)。本次使用账户已有的 Hobby 方案；账户所有者仍应确认实际用途符合平台要求。
 
 ## 运行边界
 
