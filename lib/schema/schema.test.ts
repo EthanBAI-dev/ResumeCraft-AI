@@ -53,6 +53,14 @@ describe("primitives", () => {
 });
 
 describe("item schema", () => {
+  it("旧草稿缺少十二格配置时补齐默认值，不改变简历内容", () => {
+    const metadata = { ...sampleResume.metadata, itemLayouts: undefined };
+    const migrated = parseResume({ ...sampleResume, metadata });
+    expect(migrated.metadata.itemLayouts).toEqual({});
+    expect(migrated.basics).toEqual(sampleResume.basics);
+    expect(migrated.sections).toEqual(sampleResume.sections);
+    expect(migrated.layout).toEqual(sampleResume.layout);
+  });
   it("补齐默认值", () => {
     const item = ExperienceItemSchema.parse({ id: "x", company: "A", position: "B" });
     expect(item.visible).toBe(true);

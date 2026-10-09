@@ -12,6 +12,7 @@ export type AiExecutionRequest = {
   maxOutputTokens?: number;
   temperature?: number;
   abortSignal?: AbortSignal;
+  credentials?: { apiKey: string; model: string };
 };
 
 export type AiExecutorInput = {
@@ -23,6 +24,7 @@ export type AiExecutorInput = {
   maxRetries: number;
   timeout: { totalMs: number; stepMs: number };
   abortSignal?: AbortSignal;
+  providerOptions?: { deepseek: { thinking: { type: "disabled" } } };
 };
 
 export type AiExecutorResult<T> = {
@@ -63,11 +65,20 @@ export async function executeAiRequest<T>(
     dependencies.onUsageError ??
     ((error: unknown) => console.error("[resumecraft] AI 用量记录失败", error));
   const startedAt = now();
-  const resolved = resolveModel(request.model);
+  const resolved = request.credentials
+    ? getModel(`deepseek:${request.credentials.model}`, {
+        env: { DEEPSEEK_API_KEY: request.credentials.apiKey },
+      })
+    : resolveModel(request.model);
 
   try {
     const result = await execute({
       model: resolved.model,
+      // Resume rewrites have a small output budget. DeepSeek defaults to thinking
+      // mode, which can exhaust that budget before producing the JSON payload.
+      ...(resolved.provider === "deepseek"
+        ? { providerOptions: { deepseek: { thinking: { type: "disabled" as const } } } }
+        : {}),
       prompt: request.prompt,
       system: request.system,
       maxOutputTokens: request.maxOutputTokens,

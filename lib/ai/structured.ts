@@ -12,13 +12,8 @@ import {
 } from "./execution";
 import { buildResumePrompt } from "./prompts";
 import type { ResumePromptInputMap, ResumePromptKind } from "./prompts";
-
-export const ResumeAiOutputSchema = z.object({
-  highlights: z.array(z.string().trim().min(1).max(300)).min(1).max(20),
-  missingFacts: z.array(z.string().trim().min(1).max(200)).max(12),
-});
-
-export type ResumeAiOutput = z.infer<typeof ResumeAiOutputSchema>;
+import { ResumeAiOutputSchema } from "./output-schema";
+export { ResumeAiOutputSchema, type ResumeAiOutput } from "./output-schema";
 
 export type AiStructuredRequest<T> = AiExecutionRequest & {
   schema: z.ZodType<T>;
@@ -97,7 +92,7 @@ export async function generateAiObject<T>(
 export async function runStructuredResumePrompt<K extends ResumePromptKind>(
   kind: K,
   input: ResumePromptInputMap[K],
-  options: Pick<AiExecutionRequest, "model" | "userId" | "abortSignal"> = {},
+  options: Pick<AiExecutionRequest, "model" | "userId" | "abortSignal" | "credentials"> = {},
 ) {
   const built = buildResumePrompt(kind, input);
   return generateAiObject({

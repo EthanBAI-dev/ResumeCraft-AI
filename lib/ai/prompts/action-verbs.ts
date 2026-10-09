@@ -1,4 +1,4 @@
-/** 中文简历中可替代“负责 / 参与 / 协助”等弱开头的行动动词。 */
+/** 可供选用的行动动词；不能用升级责任级别的动词替换来源事实。 */
 export const STRONG_ACTION_VERBS_ZH = [
   "主导",
   "推动",
@@ -124,5 +124,5 @@ export const STRONG_ACTION_VERBS_ZH = [
 export const WEAK_ACTION_OPENINGS_ZH = ["负责", "参与", "协助", "帮助", "配合", "涉及"] as const;
 
 export function renderActionVerbGuidance(limit = 48) {
-  return `优先用准确的行动动词开头，例如：${STRONG_ACTION_VERBS_ZH.slice(0, limit).join("、")}。不要机械替换；动词必须符合原始事实。避免以“${WEAK_ACTION_OPENINGS_ZH.join(" / ")}”开头。`;
+  return `在来源明确支持时可用行动动词，例如：${STRONG_ACTION_VERBS_ZH.slice(0, limit).join("、")}。不要机械替换或夸大责任。来源只有“参与 / 协助 / 配合”时必须保留这一责任限定；准确性优先于动词力度。`;
 }

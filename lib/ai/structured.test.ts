@@ -54,6 +54,11 @@ describe("AI 结构化输出", () => {
     );
 
     expect(result.object).toEqual({ highlights: ["主导缓存改造"], missingFacts: [] });
+    expect(execute).toHaveBeenCalledWith(
+      expect.objectContaining({
+        providerOptions: { deepseek: { thinking: { type: "disabled" } } },
+      }),
+    );
     expect(result.usage.totalTokens).toBe(30);
     expect(repository.list()[0]).toMatchObject({
       purpose: "rewrite@1.0.0",

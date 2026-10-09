@@ -1,0 +1,16 @@
+.env
+.env.*
+!.env.example
+.git
+.next
+node_modules
+tmp
+.vercel
+.openai
+.vinext
+.wrangler
+private-imports
+coverage
+playwright-report
+test-results
+services/pdf-worker/output

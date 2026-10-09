@@ -12,6 +12,7 @@ import { flattenLayout } from "@/lib/layout/operations";
 import { BasicsForm } from "./basics-form";
 import { DesignPanel } from "./design-panel";
 import { SectionEditor } from "./section-editor";
+import { ItemLayoutEditor } from "./item-layout-editor";
 
 const ADDABLE: SectionType[] = [
   "experience",
@@ -23,11 +24,28 @@ const ADDABLE: SectionType[] = [
 ];
 
 export function EditorPanel() {
+  const tab = useEditorStore((state) => state.panelTab);
+  const setTab = useEditorStore((state) => state.setPanelTab);
   return (
-    <Tabs defaultValue="content" className="flex h-full min-h-0 flex-col">
+    <Tabs
+      value={tab}
+      onValueChange={(value) => setTab(value as "content" | "design")}
+      className="flex h-full min-h-0 flex-col"
+    >
+      <div className="px-5 pt-5">
+        <p className="text-primary text-[10px] font-semibold tracking-[0.22em]">
+          YOUR NEXT CHAPTER
+        </p>
+        <h1 className="mt-1 text-xl font-semibold tracking-tight">让经历，被看见。</h1>
+        <p className="text-muted-foreground mt-1 text-xs">打磨内容，选择版式，准备下一次机会。</p>
+      </div>
       <TabsList className="mx-3 mt-3 grid w-auto grid-cols-2">
-        <TabsTrigger value="content">内容</TabsTrigger>
-        <TabsTrigger value="design">样式</TabsTrigger>
+        <TabsTrigger value="content" data-tour="content">
+          内容
+        </TabsTrigger>
+        <TabsTrigger value="design" data-tour="design">
+          模板与样式
+        </TabsTrigger>
       </TabsList>
 
       <TabsContent value="content" className="min-h-0 flex-1">
@@ -63,6 +81,7 @@ function ContentSections() {
     <>
       <CollapsibleBlock id="basics" title="基本信息" icon={<User className="size-4" />}>
         <BasicsForm />
+        <ItemLayoutEditor sectionId="basics" sectionType="basics" />
       </CollapsibleBlock>
 
       {orderedIds
@@ -71,7 +90,7 @@ function ContentSections() {
           <SectionBlockWrapper key={id} sectionId={id} />
         ))}
 
-      <div className="pt-2">
+      <div className="pt-2" data-tour="add-section">
         <p className="text-muted-foreground mb-2 text-xs font-medium">添加区块</p>
         <div className="flex flex-wrap gap-2">
           {ADDABLE.map((type) => (

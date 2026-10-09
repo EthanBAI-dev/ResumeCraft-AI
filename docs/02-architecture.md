@@ -1,5 +1,7 @@
 # 02 · 架构决策记录（ADR）
 
+> 历史设计记录。表中的 Auth.js、Prisma、PostgreSQL、Tiptap、Upstash、云端相关组件不是当前免费版本已接入的能力。当前实际数据流和依赖边界见 [当前实现与架构](current-architecture.md)。
+
 > ADR = Architecture Decision Record。每条记录「背景 / 决策 / 备选 / 代价」，面试时这份文档本身就是加分项。
 
 ---

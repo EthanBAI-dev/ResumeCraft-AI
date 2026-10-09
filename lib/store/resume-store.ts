@@ -51,6 +51,12 @@ type ResumeActions = {
 
   addItem: (sectionId: string) => string | null;
   updateItem: (sectionId: string, itemId: string, recipe: (draft: AnyItem) => void) => void;
+  applyAiHighlights: (
+    sectionId: string,
+    itemId: string,
+    expected: string[],
+    next: string[],
+  ) => boolean;
   removeItem: (sectionId: string, itemId: string) => void;
   moveItem: (sectionId: string, from: number, to: number) => void;
   duplicateItem: (sectionId: string, itemId: string) => void;
@@ -101,6 +107,7 @@ export const useResumeStore = create<ResumeStore>()(
         const record = options?.recordHistory ?? true;
         const temporalStore = useResumeStore.temporal.getState();
         if (!record) temporalStore.pause();
+        if (record) historyThrottle.reset();
 
         set((state) => {
           state.resume = {
@@ -114,6 +121,7 @@ export const useResumeStore = create<ResumeStore>()(
           temporalStore.clear();
           historyThrottle.reset();
         }
+        if (record) historyThrottle.reset();
       },
 
       reset: () => set((state) => void (state.resume = createEmptyResume())),
@@ -178,6 +186,35 @@ export const useResumeStore = create<ResumeStore>()(
           const item = section.items.find((i) => i.id === itemId);
           if (item) recipe(item as AnyItem);
         }),
+
+      applyAiHighlights: (sectionId, itemId, expected, next) => {
+        const section = get().resume.sections[sectionId];
+        const item =
+          section && section.type !== "summary"
+            ? section.items.find((entry) => entry.id === itemId)
+            : null;
+        if (
+          !item ||
+          !("highlights" in item) ||
+          item.highlights.length !== expected.length ||
+          item.highlights.some((text, index) => text !== expected[index])
+        )
+          return false;
+        if (
+          next.length === expected.length &&
+          next.every((text, index) => text === expected[index])
+        )
+          return true;
+        historyThrottle.reset();
+        set((state) => {
+          const target = state.resume.sections[sectionId];
+          if (!target || target.type === "summary") return;
+          const entry = target.items.find((value) => value.id === itemId);
+          if (entry && "highlights" in entry) entry.highlights = [...next];
+        });
+        historyThrottle.reset();
+        return true;
+      },
 
       removeItem: (sectionId, itemId) =>
         set((state) => {

@@ -40,7 +40,7 @@ export async function exportResumePdf(
 /** 生成 PDF 字节但不触发下载，供 PDF 回读与 PNG 首页渲染共用。 */
 export async function createResumePdfBlob(resume: ResumeData): Promise<Blob> {
   await document.fonts?.ready;
-  const root = document.querySelector<HTMLElement>(".resume-root");
+  const root = document.querySelector<HTMLElement>(".preview-document-scale .resume-root");
   if (!root) throw new Error("未找到可导出的简历预览");
 
   const response = await fetch("/api/export/pdf", {
@@ -64,11 +64,18 @@ export async function createResumePdfBlob(resume: ResumeData): Promise<Blob> {
 export function serializeResumeRoot(root: HTMLElement, cssText: string) {
   const clone = root.cloneNode(true) as HTMLElement;
   clone
-    .querySelectorAll(".layout-drag-handle, [data-dnd-kit-live-region]")
+    .querySelectorAll(".layout-drag-handle, [data-dnd-kit-live-region], [data-layout-guide]")
     .forEach((node) => node.remove());
   clone.querySelectorAll(".layout-section--dragging, .layout-section--over").forEach((node) => {
     node.classList.remove("layout-section--dragging", "layout-section--over");
   });
+  clone
+    .querySelectorAll("[data-guide-label], [data-break-before], .layout-section--active")
+    .forEach((node) => {
+      node.removeAttribute("data-guide-label");
+      node.removeAttribute("data-break-before");
+      node.classList.remove("layout-section--active");
+    });
 
   return `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><style>${cssText}\nbody{margin:0;background:#fff}.layout-drag-handle{display:none!important}</style></head><body>${clone.outerHTML}</body></html>`;
 }

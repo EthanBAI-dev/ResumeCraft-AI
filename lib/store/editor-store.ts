@@ -9,6 +9,17 @@ import { create } from "zustand";
  * "展开一个折叠面板"这种操作也会占用一格 undo，用户按 Ctrl+Z 会以为自己没撤销成功。
  */
 type EditorState = {
+  panelTab: "content" | "design";
+  mobileView: "edit" | "preview";
+  layoutMode: boolean;
+  guideStep: number | null;
+  helpOpen: boolean;
+  setPanelTab: (tab: "content" | "design") => void;
+  setMobileView: (view: "edit" | "preview") => void;
+  setLayoutMode: (enabled: boolean) => void;
+  startGuide: (step?: number) => void;
+  setGuideStep: (step: number | null) => void;
+  setHelpOpen: (open: boolean) => void;
   /** 当前在左侧编辑器里聚焦的区块，同时用于预览高亮 */
   activeSectionId: string | null;
   /** 展开的区块面板（可多开） */
@@ -33,6 +44,17 @@ export const ZOOM_MIN = 0.4;
 export const ZOOM_MAX = 2;
 
 export const useEditorStore = create<EditorState>()((set, get) => ({
+  panelTab: "content",
+  mobileView: "edit",
+  layoutMode: false,
+  guideStep: null,
+  helpOpen: false,
+  setPanelTab: (panelTab) => set({ panelTab }),
+  setMobileView: (mobileView) => set({ mobileView }),
+  setLayoutMode: (layoutMode) => set({ layoutMode }),
+  startGuide: (guideStep = 0) => set({ guideStep, helpOpen: false }),
+  setGuideStep: (guideStep) => set({ guideStep }),
+  setHelpOpen: (helpOpen) => set({ helpOpen, guideStep: null }),
   activeSectionId: null,
   expandedSections: ["basics"],
   zoom: null,

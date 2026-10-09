@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { runStructuredResumePrompt } from "@/lib/ai/structured";
 import { POST } from "./route";
 
@@ -7,13 +7,31 @@ vi.mock("@/lib/ai/structured", () => ({ runStructuredResumePrompt: vi.fn() }));
 function request(body: unknown) {
   return new Request("http://localhost/api/ai/resume", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", "X-ResumeCraft-Key": "test-user-key-only" },
     body: JSON.stringify(body),
   });
 }
 
 describe("POST /api/ai/resume", () => {
   beforeEach(() => vi.mocked(runStructuredResumePrompt).mockReset());
+  afterEach(() => vi.unstubAllEnvs());
+
+  it("公开模式没有用户密钥时绝不回退到站长密钥", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("AI_ALLOW_SERVER_KEY", "true");
+    vi.stubEnv("DEEPSEEK_API_KEY", "owner-secret");
+    const req = request({ kind: "rewrite", input: { highlights: ["负责缓存"] } });
+    req.headers.delete("x-resumecraft-key");
+    expect((await POST(req)).status).toBe(401);
+    expect(runStructuredResumePrompt).not.toHaveBeenCalled();
+  });
+
+  it("拒绝跨站请求与超大请求体", async () => {
+    const req = request({ kind: "rewrite", input: { highlights: ["负责缓存"] } });
+    req.headers.set("origin", "https://untrusted.example");
+    expect((await POST(req)).status).toBe(403);
+    expect((await POST(request({ padding: "x".repeat(128001) }))).status).toBe(400);
+  });
 
   it("拒绝非法 JSON、未知任务和无界输入", async () => {
     const invalidJson = new Request("http://localhost/api/ai/resume", {
@@ -61,7 +79,10 @@ describe("POST /api/ai/resume", () => {
     expect(runStructuredResumePrompt).toHaveBeenCalledWith(
       "generate",
       expect.objectContaining({ rawExperience: "维护检索服务", count: 3 }),
-      expect.objectContaining({ abortSignal: expect.any(AbortSignal) }),
+      expect.objectContaining({
+        abortSignal: expect.any(AbortSignal),
+        credentials: { apiKey: "test-user-key-only", model: "deepseek-flash" },
+      }),
     );
   });
 

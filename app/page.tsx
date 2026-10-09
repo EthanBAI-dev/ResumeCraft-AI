@@ -1,54 +1,93 @@
 import Link from "next/link";
 import { ArrowRight, FileSearch, LayoutGrid, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ResumeDocument } from "@/components/preview/resume-document";
+import { applyTemplateToResume } from "@/components/templates/registry";
+import { sampleResume } from "@/fixtures/sample-resume";
 
 const FEATURES = [
   {
     icon: LayoutGrid,
     title: "约束式可视化编辑",
-    body: "结构化流式布局 + 区块级拖拽，自由度足够但排版永远不会崩。不是自由画布 —— 绝对定位导出的 PDF 机器读不懂。",
+    body: "六套专业版式，搭配字体、配色和区块拖拽。屏幕预览与 PDF 共用一份纸张样式。",
   },
   {
     icon: Sparkles,
     title: "AI 直出结构化内容",
-    body: "模型输出直接符合数据 Schema，落回字段无需解析；改写结果先进 diff 队列逐条审阅，绝不静默覆盖你写的东西。",
+    body: "自带 DeepSeek Key，润色已有要点或从经历生成建议。对照修改、勾选采用，可随时撤销。不使用 AI 也能免费编辑导出。",
   },
   {
     icon: FileSearch,
     title: "导出即校验",
-    body: "PDF 生成后把文字反向抽取回来跟源数据比对覆盖率与顺序。「ATS 友好」在这里是可测量的指标，不是一句宣传。",
+    body: "支持 PDF、Word 和 JSON。配置 PDF Worker 后，还可导出 PNG 并检查 PDF 的文本覆盖率与阅读顺序。",
   },
 ];
 
 export default function HomePage() {
   return (
-    <main className="mx-auto flex min-h-dvh max-w-3xl flex-col justify-center px-6 py-16">
-      <p className="text-muted-foreground text-sm font-medium">AI-Powered Visual Resume Designer</p>
-      <h1 className="mt-2 text-4xl font-bold tracking-tight sm:text-5xl">ResumeCraft</h1>
-      <p className="text-muted-foreground mt-4 text-lg">
-        把简历当作一份需要被机器和人同时读懂的文档来设计。
-      </p>
+    <main className="mx-auto max-w-6xl px-6 py-8 sm:px-10">
+      <nav className="mb-16 flex items-center justify-between border-b pb-5">
+        <span className="workspace-brand text-xl font-semibold">
+          ResumeCraft<span className="text-primary ml-2">✳</span>
+        </span>
+        <span className="text-muted-foreground text-xs">本地优先 · 开源简历工作台</span>
+      </nav>
+      <div className="grid items-center gap-14 lg:grid-cols-2">
+        <div>
+          <p className="text-primary text-xs font-semibold tracking-[0.2em]">
+            BUILT FOR YOUR NEXT CHAPTER
+          </p>
+          <h1 className="mt-5 text-5xl leading-tight font-semibold tracking-tight sm:text-6xl">
+            好的经历，
+            <br />
+            值得一份<span className="text-primary">好简历。</span>
+          </h1>
+          <p className="text-muted-foreground mt-4 text-lg">
+            从第一段经历，到下一次机会。用清晰的表达与克制的设计，让你的专业被看见。
+          </p>
 
-      <div className="mt-8 flex flex-wrap gap-3">
-        {/* Base UI 的 Button 用 render 转发底层元素（不是 Radix 的 asChild）；
+          <div className="mt-8 flex flex-wrap gap-3">
+            {/* Base UI 的 Button 用 render 转发底层元素（不是 Radix 的 asChild）；
             渲染成 <a> 时必须显式 nativeButton={false}，否则会丢掉原生按钮语义并告警 */}
-        <Button size="lg" nativeButton={false} render={<Link href="/builder" />}>
-          开始编辑
-          <ArrowRight className="size-4" />
-        </Button>
-        <Button
-          variant="outline"
-          size="lg"
-          nativeButton={false}
-          render={<a href="https://github.com" target="_blank" rel="noreferrer noopener" />}
+            <Button size="lg" nativeButton={false} render={<Link href="/builder" />}>
+              开始编辑
+              <ArrowRight className="size-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="lg"
+              nativeButton={false}
+              render={
+                <a
+                  href="https://github.com/EthanBAI-dev/ResumeCraft-AI"
+                  target="_blank"
+                  rel="noreferrer noopener"
+                />
+              }
+            >
+              查看源码
+            </Button>
+          </div>
+          <p className="text-muted-foreground mt-6 text-xs">
+            免费使用，无需注册 · 本地多简历 · 六套模板 · 不强制关注
+          </p>
+        </div>
+        <div
+          className="relative h-[480px] overflow-hidden rounded-2xl bg-[#e9eeeb] sm:h-[530px]"
+          aria-label="商务模板示例"
         >
-          查看源码
-        </Button>
+          <div className="absolute top-8 left-[calc(50%-167px)] w-[794px] origin-top-left scale-[0.42] shadow-2xl">
+            <ResumeDocument resume={applyTemplateToResume(sampleResume, "executive")} />
+          </div>
+          <span className="text-primary absolute right-4 bottom-4 rounded-full border bg-white px-4 py-2 text-xs shadow-sm">
+            你的内容，专业呈现。
+          </span>
+        </div>
       </div>
 
       <div className="mt-14 grid gap-6 sm:grid-cols-3">
         {FEATURES.map(({ icon: Icon, title, body }) => (
-          <section key={title}>
+          <section key={title} className="rounded-xl border bg-[#f8faf8] p-5">
             <Icon className="text-muted-foreground size-5" />
             <h2 className="mt-3 font-semibold">{title}</h2>
             <p className="text-muted-foreground mt-1.5 text-sm leading-relaxed">{body}</p>
@@ -57,8 +96,31 @@ export default function HomePage() {
       </div>
 
       <p className="text-muted-foreground mt-14 text-xs">
-        数据默认只存在你的浏览器里（IndexedDB），不登录也能用。
+        编辑数据默认保存在浏览器。主动使用 AI 时，选定内容会发送给你配置的 AI
+        服务。高保真导出会发送简历到你配置的 PDF Worker。
       </p>
+      <div className="mt-5 flex flex-wrap items-center gap-4 border-t pt-5 text-sm">
+        <span>觉得有帮助？欢迎关注作者，获取后续更新。</span>
+        <a
+          className="text-primary underline"
+          href="https://github.com/EthanBAI-dev"
+          target="_blank"
+          rel="noreferrer noopener"
+        >
+          关注作者
+        </a>
+        <a
+          className="text-primary underline"
+          href="https://github.com/EthanBAI-dev/ResumeCraft-AI"
+          target="_blank"
+          rel="noreferrer noopener"
+        >
+          给项目 Star
+        </a>
+        <Link className="text-muted-foreground underline" href="/privacy">
+          隐私与本地数据说明
+        </Link>
+      </div>
     </main>
   );
 }

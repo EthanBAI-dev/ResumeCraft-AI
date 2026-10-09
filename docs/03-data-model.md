@@ -1,5 +1,7 @@
 # 03 · 数据模型与 Schema 设计
 
+> 历史设计记录；后文数据库表和云端关系未在当前免费版本落地。当前使用本地 IndexedDB，多简历与可编辑草稿 Schema 以 `lib/schema/`、`lib/store/library.ts` 为准。参见 [当前架构](current-architecture.md)。
+
 > **核心原则：Zod Schema 是全项目的唯一真相源。**
 > 一份 schema 同时产出：TS 类型、表单校验、AI 结构化输出的约束、API 出入参校验、DB JSON 列的校验、导入文件的校验。
 > 任何"再定义一遍类型"的地方都是设计错误。

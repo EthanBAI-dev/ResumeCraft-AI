@@ -23,6 +23,7 @@ import { GripVertical } from "lucide-react";
 import type { ResumeData } from "@/lib/schema";
 import { findSection } from "@/lib/layout/operations";
 import { useResumeStore } from "@/lib/store/resume-store";
+import { useEditorStore } from "@/lib/store/editor-store";
 import { cn } from "@/lib/utils";
 import { ResumeDocument } from "./resume-document";
 
@@ -163,6 +164,7 @@ function SortableSection({
   isDropTarget: boolean;
   children: ReactNode;
 }) {
+  const isActive = useEditorStore((state) => state.activeSectionId === id);
   const { attributes, isDragging, listeners, setNodeRef, transform, transition } = useSortable({
     id: sectionDndId(id),
     data: { kind: "section", sectionId: id },
@@ -173,6 +175,7 @@ function SortableSection({
       ref={setNodeRef}
       className={cn(
         "layout-section",
+        isActive && "layout-section--active",
         isDragging && "layout-section--dragging",
         isDropTarget && "layout-section--over",
       )}

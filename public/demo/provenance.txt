@@ -1,0 +1,20 @@
+ResumeCraft demo portraits
+
+Both portraits are fictional people generated with the built-in imagegen tool.
+They are examples, not photographs of real applicants. Replace or hide them
+before submitting a resume. No user API key was needed to generate these assets.
+
+Male prompt: Fictional East Asian adult man around age 28, neat short black hair,
+white collared shirt and navy blazer, natural restrained smile, pale gray studio
+background, soft even lighting, centered head and shoulders, circular crop safe,
+photorealistic natural skin, no text, logos, watermark or real person's likeness.
+
+Female prompt: Fictional East Asian adult woman around age 28, neat shoulder-length
+dark hair tucked behind ears, white collared blouse and navy blazer, natural
+restrained smile, pale gray studio background, soft even lighting, centered head
+and shoulders, circular crop safe, photorealistic natural skin, no text, logos,
+watermark or real person's likeness.
+
+avatar-male.jpg and avatar-female.jpg are 512px compressed copies of the original
+generated PNGs. fixtures/demo-portraits.json embeds these JPEGs as data URIs to
+keep saved resumes and standalone PDF rendering self-contained and offline-safe.

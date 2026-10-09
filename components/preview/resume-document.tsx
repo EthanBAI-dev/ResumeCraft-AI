@@ -39,7 +39,7 @@ export function ResumeDocument({ resume, renderBlock, renderColumn }: ResumeDocu
   const page = PAGE_SIZES[metadata.page.format];
 
   const ratio = metadata.page.columnRatio;
-  const columnTemplate = ratio >= 0.999 ? "1fr" : `${(ratio * 100).toFixed(2)}% minmax(0, 1fr)`;
+  const columnTemplate = ratio >= 0.999 ? "1fr" : `minmax(0, ${ratio}fr) minmax(0, ${1 - ratio}fr)`;
 
   const style = {
     "--r-page-width": `${page.width}mm`,
@@ -85,9 +85,13 @@ export function ResumeDocument({ resume, renderBlock, renderColumn }: ResumeDocu
               const content = ids.map((id, index) => {
                 const block =
                   id === "basics" ? (
-                    <BasicsBlock basics={basics} />
+                    <BasicsBlock basics={basics} layout={metadata.itemLayouts?.basics} />
                   ) : sections[id] ? (
-                    <SectionBlock section={sections[id]} locale={metadata.locale} />
+                    <SectionBlock
+                      section={sections[id]}
+                      locale={metadata.locale}
+                      itemLayouts={metadata.itemLayouts ?? {}}
+                    />
                   ) : null;
                 if (!block) return null;
 

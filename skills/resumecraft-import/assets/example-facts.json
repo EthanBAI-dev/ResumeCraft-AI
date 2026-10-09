@@ -1,0 +1,46 @@
+{
+  "basics": {
+    "name": "林知远",
+    "headline": "后端开发工程师",
+    "email": "zhiyuan@example.com",
+    "location": "杭州"
+  },
+  "summary": "两年后端开发经验，参与订单服务维护和内部工具开发。",
+  "experience": [
+    {
+      "company": "示例科技有限公司",
+      "position": "后端开发工程师",
+      "startDate": "2023-07",
+      "endDate": "present",
+      "highlights": [
+        "参与订单服务维护，协助排查接口超时问题。",
+        "为内部工具补充集成测试与使用文档。"
+      ],
+      "tech": ["Java", "MySQL"]
+    }
+  ],
+  "project": [
+    {
+      "name": "团队任务看板",
+      "role": "后端开发",
+      "startDate": "2024",
+      "endDate": "2024",
+      "highlights": ["实现任务查询和权限校验。"]
+    }
+  ],
+  "education": [
+    {
+      "school": "示例大学",
+      "degree": "本科",
+      "major": "计算机科学与技术",
+      "startDate": "2019",
+      "endDate": "2023"
+    }
+  ],
+  "skill": [{ "name": "后端", "keywords": ["Java", "Spring Boot", "MySQL"] }],
+  "certificate": [{ "name": "校级程序设计比赛二等奖", "date": "2022", "issuer": "示例大学" }],
+  "custom": [
+    { "name": "志愿活动", "items": [{ "name": "社区活动", "summary": "协助现场登记。" }] }
+  ],
+  "review": ["全部资料为虚构测试数据。", "来源没有手机号，已留空；年份没有补月份。"]
+}

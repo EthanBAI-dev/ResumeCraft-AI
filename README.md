@@ -1,74 +1,117 @@
 # ResumeCraft
 
-**AI-Powered Visual Resume Designer** — 结构化拖拽编辑 + 实时 A4 预览 + AI 内容引擎 + ATS 可解释评分 + 高保真多格式导出。
+### 让经历，被看见。
 
-> 状态：**P3 完成，P4 进行中**（多格式导出完成；AI 多 Provider、版本化 Prompt、Zod 结构化输出与服务端 API 已接入）。
-> 进度与踩坑见 [开发日记](DEVLOG.md)。
+免费、开源、本地优先的简历工作台。**不注册也能写简历、调排版和导出；AI 可选，用自己的 Key。**
+
+[快速开始](#快速开始) · [模板预览](#六套模板完整页预览) · [使用手册](docs/user-guide.md) · [简历导入 Skill](docs/import-skill.md) · [部署指南](docs/deployment.md)
+
+> 当前仓库包含可运行的编辑器和导入 Skill。尚未提供经验证的公共演示站点；请本地运行或自行部署。无账号、无云端简历、无公共 AI 额度，不以关注或付费作为导出条件。
+
+## 六套模板，完整页预览
+
+不是效果稿：以下图片用项目实际的 `ResumeDocument` 和样式渲染。六套模板使用同一份虚构经历；为便于展示整张 A4，调整了字号与间距。真实内容过长时会分页，字体随本机安装情况回退。
+
+![六套简历模板的完整 A4 页面总览](docs/images/templates-gallery.jpg)
+
+点击下图查看各模板完整大图：
+
+| 现代 · Modern                                                                                 | 经典 · Classic                                                                                | 留白 · Minimal                                                                          |
+| --------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| [![现代双栏简历](docs/images/template-modern.jpg)](docs/images/template-modern.jpg)           | [![经典单栏简历](docs/images/template-classic.jpg)](docs/images/template-classic.jpg)         | [![留白单栏简历](docs/images/template-minimal.jpg)](docs/images/template-minimal.jpg)   |
+| 清晰双栏 · 技术与产品                                                                         | 居中抬头 · 正式与通用                                                                         | 纯粹单栏 · 简洁与克制                                                                   |
+| **商务 · Executive**                                                                          | **刊物 · Editorial**                                                                          | **北欧 · Nordic**                                                                       |
+| [![商务深蓝题头简历](docs/images/template-executive.jpg)](docs/images/template-executive.jpg) | [![刊物宋体风格简历](docs/images/template-editorial.jpg)](docs/images/template-editorial.jpg) | [![北欧轻盈双栏简历](docs/images/template-nordic.jpg)](docs/images/template-nordic.jpg) |
+| 深蓝题头 · 管理与咨询                                                                         | 宋体标题 · 设计与内容                                                                         | 鼠尾草绿 · 轻盈双栏                                                                     |
+
+## 有什么不一样
+
+- **内容与排版分开**：换模板保留经历；区块可跨栏、跨页拖动，支持键盘操作和撤销。
+- **十二格字段排版**：公司、职位、日期各占几格由你决定；支持拖动换位、强制换行、对齐、显隐。虚线把实际排版规则画出来，不靠猜。
+- **本地多简历**：新建、复制、重命名、切换、自动保存。面向不同岗位保留不同版本，不用注册。
+- **已有简历也能带进来**：随仓库提供 `resumecraft-import` Skill，让 AI 助手读取用户文件、列出疑点，生成网站可导入的 JSON。
+- **AI 建议先审后用**：自带 DeepSeek Key，润色或生成经历要点；查看文字增删、勾选采用、取消或撤销。未确认前不改原文。
+- **照片与上手体验**：本地上传，4:5 矩形证件照；男女两种虚构示例、一键显隐；七步高亮引导与模块帮助。
+- **检查有理由，不编总分**：提醒遗漏、示例资料、日期和长要点，可核对手工输入的关键词；不预测录用率或 ATS 通过率。
+
+### 排版规则，看得见
+
+外层虚线是区块，内层虚线是字段，浅色竖线是十二格。展开或修改「字段排版」时自动显示，正在调整的区块会高亮；悬停字段可查看占格与换行规则。点击「完成布局」收起，导出不带辅助线。
+
+[![实际纸张上的字段与栅格辅助线](docs/images/layout-guides.jpg)](docs/images/layout-guides.jpg)
+
+## 从旧简历到新排版
+
+![读取、核对导入、排版导出的三步流程](docs/images/import-workflow.jpg)
+
+1. 把自己的 PDF、Word、图片或文字交给安装了 Skill 的 AI 助手。
+2. 助手核对来源，生成 `resume.resumecraft.json` 和待核对报告。
+3. 网站「文件 → 导入」，选择生成的 JSON，新建一份简历，再选模板和修改内容。
+
+**边界说明：网站目前直接接收 JSON，不直接识别 PDF/Word/图片简历。** 文件识别由 AI 助手及其可用工具完成；扫描件需要 OCR/视觉能力，不保证所有文件都能准确识别。Skill 不会编造日期、业绩或责任范围，也不会替你投递。见 [安装、使用与示例](docs/import-skill.md)。
+
+## 快速开始
+
+建议 Node.js 24，使用仓库指定的 pnpm 11.9.0。
 
 ```bash
-pnpm install && pnpm dev
+git clone https://github.com/EthanBAI-dev/ResumeCraft-AI.git
+cd ResumeCraft-AI
+npm install --global pnpm@11.9.0
+pnpm install --frozen-lockfile
+pnpm dev
 ```
 
-打开 http://localhost:3000/builder ，点工具栏「载入示例」即可看到效果。
+打开 [本地编辑器](http://localhost:3000/builder)。不配置环境变量也能体验编辑、本地保存与系统打印。首次进入会载入示例；已有草稿优先恢复，不自动覆盖。
 
-高保真 PDF 需要另开一个终端启动 Worker，并把 `.env.example` 复制为 `.env.local`：
+第一次使用建议：**改内容 → 选模板 → 调字段 → 检查 → 导出**。小屏幕可在「编辑内容 / 纸张预览」间切换。
+
+## 导出能力与依赖
+
+| 能力                    | 无需额外服务 | 说明                                                      |
+| ----------------------- | ------------ | --------------------------------------------------------- |
+| 原生 JSON / JSON Resume | 是           | 原生 JSON 适合备份与迁移；包含个人资料，请妥善保存        |
+| Word（DOCX）            | 是           | 独立文档渲染，排版不承诺与六套 HTML 模板逐像素一致        |
+| PDF（系统打印）         | 是           | Worker 未配置/失败时回退；建议选择 A4、关闭浏览器页眉页脚 |
+| 高保真 PDF + 文本回读   | 否           | 需要独立 PDF Worker；回读是技术检查，不是招聘系统认证     |
+| PNG 首页                | 否           | 从 Worker 生成的 PDF 首页渲染，仅导出第一页               |
+
+长内容按区块自动分页；单一区块高于整页时会提示精简，当前不会把该区块自动拆成两页。详见 [使用手册](docs/user-guide.md)。
+
+## AI 与隐私
+
+顶部「AI 设置」填入**用户自己的 DeepSeek Key**。仅当前页面内存保存，刷新清除；不进入本地简历或 JSON。调用时，Key 和选中的内容经本站后端转发给 DeepSeek 官方接口，后端处理时可接触 Key，不能称为端到端不可见。模型费用由用户的模型账户承担，网站不提供公共额度。
+
+生产 AI 路由拒绝无 Key 请求，不回退使用站长 Key；不支持任意代理地址。AI 输出需要本人核实，当前非逐字流式。网站 AI 与导入 Skill 是两条独立流程：Skill 使用你所选 AI 助手的能力与服务条款，不借用网站 Key。
+
+普通编辑与照片处理在浏览器内完成。高保真 PDF 会将简历 HTML 发送到部署者配置的 Worker。本地保存并非永久备份，清除浏览器数据、无痕会话结束或设备故障可能丢失内容。更多见 [隐私页面源码](app/privacy/page.tsx) 和 [部署边界](docs/deployment.md)。
+
+## 部署与开源贡献
+
+Web 可部署到 Vercel；不部署 Worker 也可以提供系统打印版 PDF。**不要把自己的模型 Key 放进仓库或生产环境。** Vercel 套餐的适用范围、限额与引流用途需要部署者自行确认，免费软件不等于永久免费托管。[上线步骤与验收清单](docs/deployment.md)
 
 ```bash
-pnpm --filter @resumecraft/pdf-worker start
+pnpm check:secrets
+pnpm test
+pnpm typecheck
+pnpm lint
+pnpm build
 ```
 
-Worker 默认同时渲染 2 份简历、最多排队 4 份；可通过 `MAX_CONCURRENT_RENDERS`、
-`MAX_QUEUED_RENDERS`、`QUEUE_TIMEOUT_MS` 与 `RENDER_TIMEOUT_MS` 调整。`/health` 和
-`/metrics` 会返回当前队列状态、成功/失败计数和渲染耗时。
+[贡献指南](CONTRIBUTING.md) · [MIT License](LICENSE) · [关注作者](https://github.com/EthanBAI-dev) · [反馈问题](https://github.com/EthanBAI-dev/ResumeCraft-AI/issues)
 
-未配置或 Worker 暂时不可用时，工具栏会自动回退到浏览器系统打印。
+技术栈：Next.js / React / TypeScript / Tailwind CSS / Base UI / Zustand + Immer + Zundo / Zod / dnd-kit / IndexedDB / Vercel AI SDK / Playwright / pdf.js / docx。无需账号或数据库服务器。
 
----
+## 文档导航
 
-## 这个项目在解决什么
+| 文档                                           | 用途                                     |
+| ---------------------------------------------- | ---------------------------------------- |
+| [使用手册](docs/user-guide.md)                 | 模块入口、排版、照片、AI、导出与常见问题 |
+| [导入 Skill](docs/import-skill.md)             | 安装、文件识别、核对、导入和隐私边界     |
+| [部署指南](docs/deployment.md)                 | Vercel / Worker、密钥、上线验收          |
+| [当前实现与架构](docs/current-architecture.md) | 真实数据流、关键文件和未实现项           |
+| [路线图](docs/04-roadmap.md)                   | 当前免费版本的范围                       |
+| [展示素材维护](docs/showcase.md)               | 真实模板图来源与更新方法                 |
+| [开发日记](DEVLOG.md)                          | 历史决策与验证记录                       |
 
-市面上的简历工具分两类，各有明确缺陷：
-
-| 类型       | 代表             | 缺陷                                |
-| ---------- | ---------------- | ----------------------------------- |
-| 模板填空型 | 超级简历 / Canva | 排版不可控，改一个字段整页崩        |
-| 自由画布型 | Figma 简历模板   | 分页失控，导出的 PDF 机器读不出文字 |
-
-ResumeCraft 走第三条路：**约束式可视化编辑**。数据是结构化的（Schema 驱动），布局是可拖拽的（但被 A4 网格约束），渲染只有一份真相（HTML/CSS），导出必须通过**文本回读自检**（导出后把 PDF 文字抽回来跟源数据比对，覆盖率不达标就报警）。
-
-## 核心能力
-
-✅ = 已实现　🚧 = 进行中　⬜ = 规划中
-
-- ✅ **结构化拖拽编辑** — 区块级鼠标/键盘排序、跨栏/跨页放置、落点插入线与中文语音播报
-- ✅ **实时 A4 预览** — 794×1123px 精确纸张、缩放自适应、区块级真实分页与不可拆分内容告警
-- ✅ **模板系统** — 3 套模板，样式与内容解耦，新增模板不改核心逻辑
-- ✅ **本地优先持久化** — IndexedDB 自动保存，不登录也能用
-- ✅ **撤销 / 重做** — 连续编辑智能合并为一步
-- ✅ **多格式导出** — Chromium/浏览器 PDF、PDF 文本回读、DOCX、PDF 首页 PNG、原生 JSON 与 JSON Resume 双向互转
-- 🚧 **AI 内容引擎** — OpenAI / Anthropic / Gemini / DeepSeek 统一 Provider，五类 Prompt 已通过 Zod 结构化输出；流式中断与 Diff 审阅继续建设
-- ⬜ **ATS 评分**（P5）· **版本管理**（P6）
-
-未开始部分的设计细节见 [路线图](docs/04-roadmap.md)：AI 结构化输出与 diff 审阅（P4）、ATS 规则引擎与 PDF 文本回读校验（P3/P5）、JSON Patch 版本树（P6）。
-
-## 技术栈
-
-**已接入**：Next.js 16.3 · React 19.2 · TypeScript 5.9 · Tailwind CSS v4 · shadcn/ui（Base UI）· Zustand 5 + immer + zundo · Zod 4 · Vercel AI SDK 6 · OpenAI / Anthropic / Google / DeepSeek Provider · idb-keyval · Vitest 4 · @dnd-kit · Playwright/Chromium · pdf.js · docx
-
-**规划中**：Prisma + PostgreSQL（P6）
-
-## 文档
-
-| 文档                                                    | 内容                                              |
-| ------------------------------------------------------- | ------------------------------------------------- |
-| [00 竞品调研与借鉴边界](docs/00-competitor-research.md) | Reactive Resume / OpenResume 拆解，**许可证红线** |
-| [01 产品定位与功能范围](docs/01-product-scope.md)       | 做什么、明确不做什么、MVP 切割                    |
-| [02 架构决策记录](docs/02-architecture.md)              | 6 条 ADR，含每条的备选方案与代价                  |
-| [03 数据模型与 Schema](docs/03-data-model.md)           | Zod Schema、layout 三维数组、DB 表设计            |
-| [04 路线图与里程碑](docs/04-roadmap.md)                 | P0–P7 阶段、验收标准、2 周压缩路径                |
-| [05 简历话术与面试问答](docs/05-resume-pitch.md)        | 项目怎么写进简历、面试官会问什么                  |
-| [开发日记](DEVLOG.md)                                   | 逐日决策记录（真实进度，不预写）                  |
-
-## License
-
-MIT
+`docs/00`–`docs/03` 和早期日记保留设计过程，可能包含已取消的云端/账号方案；当前行为以代码、上述使用手册和当前架构文档为准。

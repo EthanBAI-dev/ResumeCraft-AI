@@ -17,7 +17,7 @@ export const sampleResume: ResumeData = parseResume({
     phone: "138-0000-0000",
     location: "杭州",
     url: "https://github.com/example",
-    photo: { url: "", visible: false, size: 88, rounded: true },
+    photo: { url: "", visible: false, size: 88, rounded: false },
     customFields: [
       {
         id: "cf-github",

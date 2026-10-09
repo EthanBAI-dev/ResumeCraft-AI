@@ -1,7 +1,15 @@
 "use client";
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { AlertTriangle, FileMinus2, FilePlus2, Maximize2, Minus, Plus } from "lucide-react";
+import {
+  AlertTriangle,
+  FileMinus2,
+  FilePlus2,
+  Maximize2,
+  Minus,
+  Plus,
+  GripVertical,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PAGE_SIZES, mmToPx } from "@/lib/constants";
 import { useResume, useResumeStore } from "@/lib/store/resume-store";
@@ -22,6 +30,8 @@ export function PreviewCanvas() {
   const setZoom = useEditorStore((s) => s.setZoom);
   const zoomBy = useEditorStore((s) => s.zoomBy);
   const setLayout = useResumeStore((s) => s.setLayout);
+  const layoutMode = useEditorStore((s) => s.layoutMode);
+  const setLayoutMode = useEditorStore((s) => s.setLayoutMode);
 
   const viewportRef = useRef<HTMLDivElement>(null);
   const documentRef = useRef<HTMLDivElement>(null);
@@ -166,9 +176,22 @@ export function PreviewCanvas() {
   }, [resume, setLayout]);
 
   return (
-    <div className="bg-muted/40 flex h-full min-w-0 flex-col">
-      <div className="bg-background/80 flex items-center justify-between gap-2 border-b px-3 py-2 backdrop-blur">
-        <div className="flex items-center gap-1">
+    <div
+      className={cn("workspace-preview flex h-full min-w-0 flex-col", layoutMode && "layout-mode")}
+    >
+      <div className="preview-controls flex flex-wrap items-center justify-between gap-2 border-b bg-white/75 px-4 py-2">
+        <div className="flex flex-wrap items-center gap-1" data-tour="preview">
+          <Button
+            data-tour="layout"
+            variant={layoutMode ? "default" : "outline"}
+            size="sm"
+            aria-pressed={layoutMode}
+            onClick={() => setLayoutMode(!layoutMode)}
+          >
+            <GripVertical className="size-3.5" />
+            {layoutMode ? "完成布局" : "调整布局"}
+          </Button>
+          <span className="bg-border mx-1 h-4 w-px" aria-hidden="true" />
           <Button
             variant="ghost"
             size="icon"
@@ -224,14 +247,28 @@ export function PreviewCanvas() {
             </span>
           </div>
         ) : (
-          <span className="text-muted-foreground text-sm">内容适配良好</span>
+          <span className="text-muted-foreground text-xs">
+            {resume.metadata.page.format.toUpperCase()} · {resume.layout.length} 页 · 实时预览
+          </span>
         )}
       </div>
 
-      <div ref={viewportRef} className="min-h-0 flex-1 overflow-auto p-6">
+      {layoutMode && (
+        <p className="workspace-note border-b bg-teal-50 px-4 py-2 text-xs text-teal-900">
+          外层虚线 = 区块，内层虚线 = 字段，浅色竖线 = 12 格。悬停字段查看占格数与 ↵ 换行规则。
+          拖动六点手柄可移动区块；在「字段排版 · 12 格」中调整字段。辅助线不参与排版，也不会导出。
+        </p>
+      )}
+
+      <div ref={viewportRef} className="preview-viewport min-h-0 flex-1 overflow-auto p-6">
         <div
+          className="preview-document-wrap"
           style={{
             width: pageWidthPx * scale,
+            height:
+              (mmToPx(PAGE_SIZES[resume.metadata.page.format].height) + 24) *
+              resume.layout.length *
+              scale,
             margin: "0 auto",
           }}
         >
@@ -243,7 +280,7 @@ export function PreviewCanvas() {
               width: pageWidthPx,
             }}
             className={cn(
-              "[&_.resume-page]:mb-6 [&_.resume-page]:shadow-lg [&_.resume-page]:ring-1 [&_.resume-page]:ring-black/10",
+              "preview-document-scale [&_.resume-page]:mb-6 [&_.resume-page]:shadow-xl [&_.resume-page]:ring-1 [&_.resume-page]:ring-black/5",
               overflow.length > 0 && "[&_.resume-page]:ring-amber-400/60",
             )}
           >
@@ -252,7 +289,7 @@ export function PreviewCanvas() {
         </div>
       </div>
       {unbreakablePages.length > 0 ? (
-        <div className="border-t bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:bg-amber-950/30 dark:text-amber-300">
+        <div className="workspace-note border-t bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:bg-amber-950/30 dark:text-amber-300">
           第 {unbreakablePages.join("、")} 页有单一区块高于可用纸面，无法在区块中间自动断开；
           请缩短该区块或调小字号/页边距。
         </div>

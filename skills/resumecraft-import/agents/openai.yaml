@@ -1,0 +1,4 @@
+interface:
+  display_name: "ResumeCraft 简历导入"
+  short_description: "读取用户简历、保留事实并生成可导入文件，明确提示识别疑点与缺失信息"
+  default_prompt: "使用 $resumecraft-import 读取我提供的简历，保留原始事实，生成 ResumeCraft 导入文件并列出待核对项。"

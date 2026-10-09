@@ -55,7 +55,7 @@
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
+  --primary: #25635b;
   --primary-foreground: oklch(0.985 0 0);
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
@@ -141,7 +141,7 @@
   color-scheme: light;
   background: var(--r-bg);
   color: var(--r-text);
-  font-family: var(--r-font-family), "Noto Sans SC", "Microsoft YaHei", sans-serif;
+  font-family: var(--r-font-family), "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif;
   font-size: var(--r-font-size);
   line-height: var(--r-line-height);
   -webkit-font-smoothing: antialiased;
@@ -262,6 +262,7 @@
 }
 
 .resume-section {
+  overflow-wrap: anywhere;
   break-inside: avoid;
   /* 关键：flex 子项默认 flex-shrink:1，内容超出一页时会被悄悄压扁，
      既破坏排版（行距被挤没），又让溢出检测永远量不到（scrollHeight == clientHeight）。
@@ -287,6 +288,7 @@
 }
 
 .resume-item__head {
+  flex-wrap: wrap;
   display: flex;
   justify-content: space-between;
   align-items: baseline;
@@ -295,6 +297,106 @@
 
 .resume-item__title {
   font-weight: 600;
+}
+
+.resume-item__grid {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  grid-auto-flow: row;
+  align-items: baseline;
+  column-gap: 0.35em;
+  row-gap: 0.12em;
+  min-width: 0;
+}
+.resume-item__atom {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.resume-item__atom > .resume-highlights,
+.resume-item__atom > .resume-tags {
+  margin-top: calc(var(--r-item-gap) * 0.25);
+}
+.item-layout-grid {
+  background-image: repeating-linear-gradient(
+    to right,
+    transparent 0,
+    transparent calc(100% / 12 - 1px),
+    #dbe6df calc(100% / 12 - 1px),
+    #dbe6df calc(100% / 12)
+  );
+}
+.layout-mode .layout-drag-handle {
+  opacity: 1;
+  touch-action: none;
+}
+.layout-mode .layout-section {
+  outline: 1px dashed #25635b55;
+  outline-offset: 4px;
+  border-radius: 2px;
+}
+.layout-mode .layout-drop-zone {
+  background: #25635b05;
+  outline: 1px dashed #25635b20;
+  outline-offset: 8px;
+}
+
+/* Paint-only guides: never change sizes, wrapping, or automatic pagination. */
+.layout-grid-guide {
+  display: none;
+}
+@media screen {
+  .layout-mode .layout-section--active {
+    outline: 2px dashed #0d9488;
+  }
+  .layout-mode .layout-grid-guide {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: inherit;
+    pointer-events: none;
+    user-select: none;
+  }
+  .layout-grid-guide > span {
+    border-inline: 1px dashed #0d948822;
+  }
+  .layout-mode .resume-item__atom {
+    position: relative;
+    outline: 1px dashed #0d948870;
+    outline-offset: -1px;
+  }
+  .layout-mode .resume-item__atom[data-break-before="true"] {
+    box-shadow: inset 2px 0 #0d9488aa;
+  }
+  .layout-mode .resume-item__atom:hover {
+    outline-color: #0f766e;
+    background-color: #0d94880a;
+    z-index: 2;
+  }
+  .layout-mode .resume-item__atom:hover::after {
+    content: attr(data-guide-label);
+    position: absolute;
+    bottom: 100%;
+    right: 0;
+    z-index: 5;
+    width: max-content;
+    max-width: 240px;
+    padding: 2px 5px;
+    border-radius: 3px;
+    background: #115e59;
+    color: white;
+    font: 10px/1.5 sans-serif;
+    text-align: left;
+    pointer-events: none;
+  }
+  /* Template-native headers are not 12-column grids: outline real elements
+     without pretending their flex layout has grid spans. */
+  .layout-mode .resume-basics__identity > *,
+  .layout-mode .resume-basics__contacts > * {
+    outline: 1px dashed #0d948870;
+    outline-offset: 1px;
+  }
 }
 
 .resume-item__meta,
@@ -359,6 +461,9 @@
 .tpl-classic .resume-basics {
   text-align: center;
 }
+.tpl-classic .resume-basics__identity {
+  justify-content: center;
+}
 .tpl-classic .resume-basics__name {
   font-size: 2em;
   font-weight: 700;
@@ -391,6 +496,297 @@
   color: var(--r-muted);
 }
 
+/* Print-oriented typography: decoration never replaces selectable text. */
+.resume-basics {
+  padding-bottom: 0.8em;
+}
+.resume-basics__name {
+  letter-spacing: -0.035em;
+  line-height: 1.2;
+  margin-bottom: 0.25em;
+}
+.resume-basics__contacts {
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.resume-highlights > li::marker {
+  color: var(--r-primary);
+  font-size: 0.85em;
+}
+.resume-item__title {
+  font-weight: 700;
+}
+.resume-item__meta {
+  line-height: 1.65;
+}
+.tpl-modern .resume-section__title {
+  border-left: 0;
+  padding: 0 0 0.35em;
+  border-bottom: 1px solid color-mix(in srgb, var(--r-primary) 25%, transparent);
+  letter-spacing: 0.09em;
+}
+.tpl-modern .resume-basics {
+  border-top: 4px solid var(--r-primary);
+  padding-top: 1em;
+}
+.tpl-modern .resume-tag,
+.tpl-nordic .resume-tag {
+  border: 0;
+  background: color-mix(in srgb, var(--r-primary) 7%, var(--r-bg));
+  padding: 0.15em 0.5em;
+}
+.tpl-classic .resume-basics {
+  padding-bottom: 1.2em;
+}
+.tpl-classic .resume-basics__name {
+  font-family: "Noto Serif SC", "Songti SC", Georgia, serif;
+}
+.tpl-minimal .resume-basics {
+  padding-bottom: 1.2em;
+  border-bottom: 1px solid #d4d4d8;
+}
+.tpl-minimal .resume-basics__name {
+  font-size: 2.6em;
+  font-weight: 500;
+}
+.tpl-minimal .resume-section__title {
+  color: var(--r-text);
+  letter-spacing: 0.18em;
+}
+.tpl-executive .resume-basics {
+  background: var(--r-primary);
+  color: #fff;
+  padding: 1.4em 1.6em;
+  border-radius: 2px;
+}
+.tpl-executive .resume-basics .resume-muted {
+  color: #fff;
+}
+.tpl-executive .resume-basics__name {
+  font-size: 2.4em;
+  font-weight: 700;
+}
+.tpl-executive .resume-section__title {
+  border-bottom: 2px solid var(--r-primary);
+  padding-bottom: 0.35em;
+  letter-spacing: 0.12em;
+}
+.tpl-executive .resume-item__head > .resume-item__meta {
+  font-variant-numeric: tabular-nums;
+}
+.tpl-editorial .resume-basics {
+  border-bottom: 3px double var(--r-primary);
+  padding-bottom: 1.2em;
+}
+.tpl-editorial .resume-basics__name {
+  font-family: "Noto Serif SC", "Songti SC", Georgia, serif;
+  font-size: 2.7em;
+  font-weight: 700;
+  color: var(--r-primary);
+  letter-spacing: 0.06em;
+}
+.tpl-editorial .resume-section__title {
+  display: flex;
+  align-items: center;
+  gap: 1em;
+  font-size: 1.12em;
+  font-family: "Noto Serif SC", "Songti SC", Georgia, serif;
+}
+.tpl-editorial .resume-section__title::after {
+  content: "";
+  height: 1px;
+  flex: 1;
+  background: color-mix(in srgb, var(--r-primary) 30%, transparent);
+}
+.tpl-editorial .resume-tag {
+  border: 0;
+  border-radius: 0;
+  padding: 0 0.65em 0 0;
+}
+.tpl-nordic .resume-basics {
+  background: color-mix(in srgb, var(--r-primary) 9%, var(--r-bg));
+  padding: 1.1em;
+  border-radius: 3px;
+}
+.tpl-nordic .resume-basics__name {
+  font-size: 2em;
+  font-weight: 600;
+  color: var(--r-primary);
+}
+.tpl-nordic .resume-section__title {
+  letter-spacing: 0.12em;
+  font-size: 0.94em;
+  padding-bottom: 0.4em;
+  border-bottom: 1px solid color-mix(in srgb, var(--r-primary) 22%, transparent);
+}
+
+/* Workspace chrome is intentionally separate from the exported paper. */
+.workspace {
+  background: #f6f7f5;
+}
+.workspace-toolbar {
+  background: #fff;
+  box-shadow: 0 1px 0 #e6eae7;
+  z-index: 20;
+}
+.workspace-brand {
+  color: #1e5149;
+  letter-spacing: -0.04em;
+}
+.editor-sidebar {
+  background: #fff;
+}
+.workspace-preview {
+  background: #e9eeeb;
+}
+.preview-viewport {
+  background-image: radial-gradient(#bdc9c1 0.65px, transparent 0.65px);
+  background-size: 16px 16px;
+}
+.template-thumbnail {
+  position: relative;
+  height: 162px;
+  background: #edf0ed;
+  overflow: hidden;
+  border-radius: 6px;
+}
+.template-thumbnail__paper {
+  position: absolute;
+  width: 794px;
+  height: 1123px;
+  top: 8px;
+  left: calc(50% - 53.6px);
+  transform: scale(0.135);
+  transform-origin: top left;
+  box-shadow: 0 8px 30px #0002;
+}
+.template-selected {
+  position: absolute;
+  right: 5px;
+  bottom: 5px;
+  background: #25635b;
+  color: white;
+  border-radius: 20px;
+  padding: 2px 7px;
+  font-size: 10px;
+}
+.template-card:hover {
+  background: #f5f8f6;
+}
+.export-menu {
+  position: relative;
+}
+.export-menu summary {
+  cursor: pointer;
+  list-style: none;
+}
+.export-menu summary::-webkit-details-marker {
+  display: none;
+}
+.export-menu__items {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 10px);
+  width: 210px;
+  padding: 8px;
+  background: white;
+  border: 1px solid #e1e7e2;
+  border-radius: 12px;
+  box-shadow: 0 16px 40px #163e2920;
+  display: grid;
+  gap: 5px;
+}
+.export-menu__items > button {
+  justify-content: flex-start;
+}
+.ai-panel {
+  border: 1px solid #c7ddd2;
+  background: #f3f8f5;
+  border-radius: 12px;
+  padding: 14px;
+}
+
+.guide-dialog {
+  position: fixed;
+  inset: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  width: 100vw;
+  height: 100dvh;
+  max-width: none;
+  max-height: none;
+  background: transparent;
+  overflow: hidden;
+  color: #172c25;
+}
+.guide-dialog::backdrop {
+  background: transparent;
+}
+.guide-mask {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.guide-spotlight {
+  animation: guide-pulse 1.8s ease-in-out infinite;
+}
+.guide-card {
+  position: fixed;
+  width: min(368px, calc(100vw - 24px));
+  max-height: calc(100dvh - 24px);
+  overflow: auto;
+  padding: 22px;
+  background: white;
+  border: 1px solid #dce9df;
+  border-radius: 18px;
+  box-shadow: 0 20px 80px #09271f40;
+  transition:
+    top 180ms ease,
+    left 180ms ease;
+}
+.guide-card button:focus-visible,
+.help-dialog button:focus-visible {
+  outline: 2px solid #25635b;
+  outline-offset: 3px;
+}
+.help-dialog {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  width: min(760px, calc(100vw - 24px));
+  max-height: calc(100dvh - 32px);
+  padding: 0;
+  border: 1px solid #dce9df;
+  border-radius: 18px;
+  background: white;
+  color: #172c25;
+  box-shadow: 0 20px 80px #09271f40;
+}
+.help-dialog::backdrop {
+  background: #0c201daa;
+  backdrop-filter: blur(3px);
+}
+@keyframes guide-pulse {
+  0%,
+  100% {
+    stroke-opacity: 1;
+  }
+  50% {
+    stroke-opacity: 0.4;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0s !important;
+    animation-duration: 0s !important;
+  }
+}
+
 /* --- 打印：P3 的 Chromium 导出与浏览器 Ctrl+P 走同一条路径 ------------- */
 @page {
   size: var(--r-page-size, A4);
@@ -398,6 +794,19 @@
 }
 
 @media print {
+  [data-layout-guide] {
+    display: none !important;
+  }
+  .layout-mode .layout-section,
+  .layout-mode .layout-drop-zone {
+    outline: none !important;
+    background: transparent !important;
+  }
+  .guide-dialog,
+  .help-dialog,
+  dialog::backdrop {
+    display: none !important;
+  }
   body * {
     visibility: hidden;
   }
@@ -418,5 +827,35 @@
   }
   .layout-drag-handle {
     display: none !important;
+  }
+  .editor-sidebar,
+  .workspace-toolbar,
+  .mobile-switch,
+  .preview-controls,
+  .workspace-note {
+    display: none !important;
+  }
+  .workspace,
+  .workspace-body,
+  .workspace-preview,
+  .preview-viewport,
+  .preview-document-wrap,
+  .preview-document-scale {
+    display: block !important;
+    height: auto !important;
+    width: auto !important;
+    overflow: visible !important;
+    transform: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
+  }
+  .resume-root {
+    position: static;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+  .resume-page {
+    margin: 0 !important;
   }
 }

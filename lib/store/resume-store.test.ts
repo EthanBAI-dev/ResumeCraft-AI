@@ -7,6 +7,43 @@ import { useResumeStore } from "./resume-store";
 const store = () => useResumeStore.getState();
 const data = () => useResumeStore.getState().resume;
 
+describe("AI acceptance", () => {
+  const highlights = () => {
+    const section = data().sections.experience;
+    if (section.type !== "experience") throw new Error("Expected experience");
+    return section.items[0].highlights;
+  };
+
+  it("rejects stale suggestions and deleted targets without overwriting edits", () => {
+    store().replaceResume(sampleResume, { recordHistory: false });
+    const source = [...highlights()];
+    store().updateItem("experience", "exp-1", (item) => {
+      if ("highlights" in item) item.highlights = ["用户的新内容"];
+    });
+    expect(store().applyAiHighlights("experience", "exp-1", source, ["AI 内容"])).toBe(false);
+    expect(highlights()).toEqual(["用户的新内容"]);
+    store().removeItem("experience", "exp-1");
+    expect(store().applyAiHighlights("experience", "exp-1", ["用户的新内容"], ["AI 内容"])).toBe(
+      false,
+    );
+  });
+
+  it("each acceptance is undoable independently, including rapid manual edits", () => {
+    store().replaceResume(sampleResume, { recordHistory: false });
+    const source = [...highlights()];
+    store().updateBasics("name", "刚修改的姓名");
+    expect(store().applyAiHighlights("experience", "exp-1", source, ["第一版"])).toBe(true);
+    expect(store().applyAiHighlights("experience", "exp-1", ["第一版"], ["第二版"])).toBe(true);
+    useResumeStore.temporal.getState().undo();
+    expect(highlights()).toEqual(["第一版"]);
+    useResumeStore.temporal.getState().undo();
+    expect(highlights()).toEqual(source);
+    expect(data().basics.name).toBe("刚修改的姓名");
+    useResumeStore.temporal.getState().redo();
+    expect(highlights()).toEqual(["第一版"]);
+  });
+});
+
 beforeEach(() => {
   // 走 replaceResume 的"不记历史"分支重置，而不是裸 setState：
   // 裸 setState 会占掉历史节流的窗口，导致紧接着的第一次编辑无法撤销。

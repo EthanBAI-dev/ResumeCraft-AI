@@ -7,6 +7,8 @@ import type { AnyItem, Section } from "@/lib/schema";
 import { useResumeStore, useSection } from "@/lib/store/resume-store";
 import { DebouncedTextarea, TagsField, TextAreaField, TextField } from "./debounced-field";
 import { HAS_HIGHLIGHTS, ITEM_FIELDS, ITEM_TITLE_KEYS, type FieldDef } from "./item-fields";
+import { AiPolish } from "./ai-polish";
+import { ItemLayoutEditor } from "./item-layout-editor";
 
 export function SectionEditor({ sectionId }: { sectionId: string }) {
   const section = useSection(sectionId);
@@ -43,6 +45,9 @@ export function SectionEditor({ sectionId }: { sectionId: string }) {
         />
       ) : (
         <>
+          {section.type !== "skill" && (
+            <ItemLayoutEditor sectionId={section.id} sectionType={section.type} />
+          )}
           <div className="space-y-3">
             {section.items.map((item, index) => (
               <ItemCard
@@ -159,6 +164,11 @@ function ItemCard({
           <HighlightsField
             values={(record.highlights as string[]) ?? []}
             onCommit={(v) => set("highlights", v)}
+          />
+          <AiPolish
+            sectionId={section.id}
+            itemId={item.id}
+            highlights={(record.highlights as string[]) ?? []}
           />
         </>
       ) : null}

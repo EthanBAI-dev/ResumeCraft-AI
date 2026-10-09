@@ -103,7 +103,7 @@ export function createEmptyResume(): ResumeData {
       phone: "",
       location: "",
       url: "",
-      photo: { url: "", visible: false, size: 88, rounded: true },
+      photo: { url: "", visible: false, size: 88, rounded: false },
       customFields: [],
     },
     sections: Object.fromEntries(sections.map((s) => [s.id, s])),

@@ -39,7 +39,7 @@ describe("Prompt 统一执行入口", () => {
         model: "deepseek:deepseek-v4-flash",
         userId: "user-1",
         abortSignal: abortController.signal,
-        purpose: "rewrite@1.0.0",
+        purpose: "rewrite@1.0.1",
         temperature: 0.3,
         maxOutputTokens: 800,
       }),

@@ -5,7 +5,13 @@ import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import { useResume, useResumeStore } from "@/lib/store/resume-store";
-import { TEMPLATES } from "@/components/templates/registry";
+import { TEMPLATES, applyTemplateToResume } from "@/components/templates/registry";
+import { ResumeDocument } from "@/components/preview/resume-document";
+import { sampleResume } from "@/fixtures/sample-resume";
+
+const PREVIEWS = Object.fromEntries(
+  TEMPLATES.map((t) => [t.id, applyTemplateToResume(sampleResume, t.id)]),
+);
 
 const PRESET_COLORS = ["#2563eb", "#0f766e", "#b91c1c", "#7c3aed", "#c2410c", "#18181b"];
 
@@ -19,26 +25,19 @@ const FONTS = [
 export function DesignPanel() {
   const metadata = useResume((s) => s.resume.metadata);
   const updateMetadata = useResumeStore((s) => s.updateMetadata);
-  const setLayout = useResumeStore((s) => s.setLayout);
-  const sections = useResume((s) => s.resume.sections);
-
   const applyTemplate = (id: string) => {
-    const template = TEMPLATES.find((t) => t.id === id);
-    if (!template) return;
-
-    updateMetadata((draft) => {
-      draft.template = id;
-      draft.page.columnRatio = template.defaultColumnRatio;
-    });
-    // 模板自带推荐布局；内容不动，只重排结构（ADR：data 与 layout 解耦）
-    setLayout(template.defaultLayout(["basics", ...Object.keys(sections)]));
+    const state = useResumeStore.getState();
+    state.replaceResume(applyTemplateToResume(state.resume, id));
   };
 
   return (
     <div className="space-y-6">
       <section className="space-y-2">
-        <Label>模板</Label>
-        <div className="grid grid-cols-3 gap-2">
+        <Label>为你的经历，选一张好纸</Label>
+        <p className="text-muted-foreground text-xs leading-relaxed">
+          六套排版预设，内容完整保留。配色与字体仍可自由调整。
+        </p>
+        <div className="grid grid-cols-2 gap-3">
           {TEMPLATES.map((template) => (
             <button
               key={template.id}
@@ -47,11 +46,19 @@ export function DesignPanel() {
               aria-label={`使用 ${template.name} 模板：${template.description}`}
               aria-pressed={metadata.template === template.id}
               className={cn(
-                "hover:bg-accent rounded-lg border p-2 text-left transition-colors",
+                "template-card overflow-hidden rounded-xl border p-2 text-left transition-colors",
                 metadata.template === template.id && "border-primary ring-primary ring-1",
               )}
             >
-              <div className="text-sm font-medium">{template.name}</div>
+              <div className="template-thumbnail" aria-hidden="true" inert>
+                <div className="template-thumbnail__paper">
+                  <ResumeDocument resume={PREVIEWS[template.id]} />
+                </div>
+                {metadata.template === template.id && (
+                  <span className="template-selected">已选</span>
+                )}
+              </div>
+              <div className="mt-2 text-xs font-semibold">{template.name}</div>
               <div className="text-muted-foreground mt-0.5 text-[11px] leading-tight">
                 {template.description}
               </div>

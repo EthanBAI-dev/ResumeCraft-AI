@@ -27,6 +27,7 @@ prisma/*.db
 prisma/*.db-journal
 
 # runtime artifacts
+/private-imports/
 /tmp/
 *.log
 npm-debug.log*

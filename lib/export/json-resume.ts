@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { createEmptyResume, createSection, parseResume, type ResumeData } from "@/lib/schema";
+import { parseDraft } from "@/lib/schema/draft";
 
 const StringList = z.array(z.string()).optional();
 const ProfileSchema = z
@@ -230,7 +231,7 @@ export function fromJsonResume(input: unknown): ResumeData {
   const embedded = jsonResume["x-resumecraft"]?.resume;
   if (embedded) {
     try {
-      return parseResume(embedded);
+      return parseDraft(embedded);
     } catch {
       // 扩展可能来自旧版本；标准字段仍然可以继续导入。
     }
@@ -258,7 +259,7 @@ export function fromJsonResume(input: unknown): ResumeData {
       url: basics?.image ?? "",
       visible: Boolean(basics?.image),
       size: 88,
-      rounded: true,
+      rounded: false,
     },
     customFields: (basics?.profiles ?? []).map((profile, index) => ({
       id: `jsonresume-profile-${index + 1}`,
@@ -361,7 +362,7 @@ export function importResumeJson(text: string): {
 } {
   const input: unknown = JSON.parse(text);
   if (isRecord(input) && "sections" in input && "layout" in input && "metadata" in input) {
-    return { resume: parseResume(input), format: "resumecraft" };
+    return { resume: parseDraft(input), format: "resumecraft" };
   }
   return { resume: fromJsonResume(input), format: "json-resume" };
 }

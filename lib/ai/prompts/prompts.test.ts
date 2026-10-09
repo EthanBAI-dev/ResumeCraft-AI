@@ -21,8 +21,8 @@ describe("版本化简历 Prompt", () => {
     const prompt = buildResumePrompt("rewrite", { highlights: ["负责缓存"] });
     expect(prompt).toMatchObject({
       kind: "rewrite",
-      version: "1.0.0",
-      reference: "rewrite@1.0.0",
+      version: "1.0.1",
+      reference: "rewrite@1.0.1",
       temperature: 0.3,
       maxOutputTokens: 800,
     });
