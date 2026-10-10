@@ -773,17 +773,52 @@
 }
 .guide-card {
   position: fixed;
-  width: min(368px, calc(100vw - 24px));
-  max-height: calc(100dvh - 24px);
-  overflow: auto;
-  padding: 22px;
+  right: 12px;
+  bottom: 12px;
+  width: min(400px, calc(100vw - 24px));
+  height: min(480px, calc(100dvh - 24px));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 20px;
   background: white;
   border: 1px solid #dce9df;
   border-radius: 18px;
   box-shadow: 0 20px 80px #09271f40;
-  transition:
-    top 180ms ease,
-    left 180ms ease;
+}
+.guide-copy {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding-right: 4px;
+  scrollbar-gutter: stable;
+}
+.guide-actions {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #edf3ef;
+}
+.guide-actions > div > button {
+  width: 84px;
+}
+.guide-actions > div > .guide-next {
+  width: 120px;
+}
+@media (max-width: 380px) {
+  .guide-card {
+    padding: 16px;
+  }
+  .guide-actions {
+    flex-wrap: wrap;
+  }
+  .guide-actions > div {
+    margin-left: auto;
+  }
 }
 .guide-card button:focus-visible,
 .help-dialog button:focus-visible {

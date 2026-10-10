@@ -10,6 +10,8 @@ Open **Content** and expand Personal details or a section. Fields commit after a
 
 The first visit opens a fictional sample. Existing drafts and older single-draft data are restored first. **Load sample** is highlighted while the sample notice is active; dismiss it or start editing. Subsequent loads ask you to cancel, replace the current draft (undoable), or create a separate sample.
 
+The tour's explanation card stays in the bottom-right corner. **Back / Next** never follow the spotlight around the screen; long descriptions scroll inside the card while its navigation stays visible. Numbered buttons jump to a step, and Escape or Skip tour closes it. Reopen it from Help anytime.
+
 English is the default interface. Choose **English / 中文** to change the UI; the choice is saved locally. `?lang=en` and `?lang=zh` explicitly select a language when opening a shared link. New samples and blank resumes use that language. Existing resume text is never automatically translated or overwritten. **Resume language** under Templates & style independently controls Present/date labels and the requested AI output language.
 
 ## Layout and photos
@@ -38,6 +40,8 @@ Keys live only in page memory and clear on refresh/close. They are excluded from
 The site directly imports native ResumeCraft JSON and standard JSON Resume. Native JSON retains the full design; standard interchange may lose app-specific details.
 
 For PDF, DOCX, images or text, use the included [resumecraft-import Skill](../skills/resumecraft-import/SKILL.md) in an AI assistant that supports Skills. Install/copy the **entire directory**, including scripts and references, into that assistant's documented Skill location—not just SKILL.md. Installation differs by assistant.
+
+To reproduce a README template preview, save the matching [English example JSON](../README.md#six-templates-one-story) and import it using Files. The six files include the same English content, rectangular fictional portrait and layout settings used for their screenshots. Import creates a new draft. If JSON opens as text, use Save page as and retain the `.json` extension. These are demonstration resumes, not genuine credentials.
 
 Give the assistant your file and ask it to preserve facts, flag uncertainties and generate a validated ResumeCraft import file. Review names, dates, contact information, responsibilities and achievements. Unknown facts must stay empty. Scans need OCR/vision support; extraction can be inaccurate. Import the JSON via **Files → Import** to create a separate local resume.
 

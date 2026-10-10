@@ -4,30 +4,30 @@ import { resolve } from "node:path";
 import { renderToStaticMarkup } from "react-dom/server";
 import { expect, it } from "vitest";
 import { ResumeDocument } from "@/components/preview/resume-document";
-import { applyTemplateToResume, TEMPLATES } from "@/components/templates/registry";
+import { TEMPLATES } from "@/components/templates/registry";
+import { parseDraft } from "@/lib/schema/draft";
 import { en } from "@/lib/i18n/en";
-import { englishSampleResume } from "./english-sample-resume";
-import { DEMO_PHOTO } from "./demo-photo";
+import { englishShowcaseForTemplate } from "./english-showcase-resume";
 
 it("renders six genuine English A4 template previews for the README", async () => {
   const fixtures = TEMPLATES.map((template) => {
-    const resume = applyTemplateToResume(structuredClone(englishSampleResume), template.id);
-    resume.basics.photo = { url: DEMO_PHOTO, visible: true, size: 72, rounded: false };
-    resume.basics.customFields = resume.basics.customFields.slice(0, 1);
-    resume.metadata.page.margin = 14;
-    resume.metadata.typography = {
-      ...resume.metadata.typography,
-      fontSize: resume.metadata.page.columnRatio < 1 ? 11.5 : 9.5,
-      lineHeight: resume.metadata.page.columnRatio < 1 ? 1.45 : 1.35,
-      sectionGap: resume.metadata.page.columnRatio < 1 ? 14 : 10,
-      itemGap: resume.metadata.page.columnRatio < 1 ? 9 : 7,
-    };
+    const resume = englishShowcaseForTemplate(template.id);
     const html = renderToStaticMarkup(<ResumeDocument resume={resume} />);
     expect(html).toContain("Alex Chen");
     expect(html).toContain("Present");
     expect(html).not.toMatch(/[\u3400-\u9fff]+</u);
     return { template, html, resume };
   });
+  if (process.env.SHOWCASE_SAMPLES_OUTPUT) {
+    const samplesOut = resolve(process.env.SHOWCASE_SAMPLES_OUTPUT);
+    mkdirSync(samplesOut, { recursive: true });
+    fixtures.forEach(({ template, resume }) =>
+      writeFileSync(
+        resolve(samplesOut, `resume-${template.id}-en.json`),
+        JSON.stringify(parseDraft(resume), null, 2) + "\n",
+      ),
+    );
+  }
   if (!process.env.SHOWCASE_OUTPUT) return;
   const out = resolve(process.env.SHOWCASE_OUTPUT);
   mkdirSync(out, { recursive: true });
@@ -77,3 +77,15 @@ it("renders six genuine English A4 template previews for the README", async () =
     ),
   );
 }, 30000);
+
+it("ships importable English resumes identical to the six preview sources", () => {
+  for (const template of TEMPLATES) {
+    const published = JSON.parse(
+      readFileSync(resolve(`public/examples/resume-${template.id}-en.json`), "utf8"),
+    );
+    expect(parseDraft(published)).toEqual(parseDraft(englishShowcaseForTemplate(template.id)));
+    expect(published.metadata.locale).toBe("en-US");
+    expect(JSON.stringify(published.sections)).not.toMatch(/[\u3400-\u9fff]/u);
+    expect(published.basics.photo.rounded).toBe(false);
+  }
+});

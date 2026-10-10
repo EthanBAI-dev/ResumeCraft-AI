@@ -62,9 +62,6 @@ export const GUIDE_STEPS = [
 type Rect = { left: number; top: number; width: number; height: number };
 type Geometry = {
   target: Rect | null;
-  left: number;
-  top: number;
-  width: number;
   viewportWidth: number;
   viewportHeight: number;
 };
@@ -72,15 +69,20 @@ type Geometry = {
 /** Native modal semantics handle focus trapping and background inertness. The SVG
  * cutout highlights the real control without moving/reparenting application DOM. */
 export function EditorGuide({ ready }: { ready: boolean }) {
-  useLanguage();
+  const language = useLanguage();
   const step = useEditorStore((state) => state.guideStep);
   const helpOpen = useEditorStore((state) => state.helpOpen);
   const active = step !== null || helpOpen;
   const touring = step !== null;
   const dialog = useRef<HTMLDialogElement>(null);
-  const card = useRef<HTMLDivElement>(null);
+  const copy = useRef<HTMLDivElement>(null);
   const [geometry, setGeometry] = useState<Geometry | null>(null);
   const current = GUIDE_STEPS[step ?? 0];
+
+  useEffect(() => {
+    // Only the explanation scrolls. Navigation stays anchored across every step.
+    if (copy.current) copy.current.scrollTop = 0;
+  }, [step, language]);
 
   useEffect(() => {
     if (!ready) return;
@@ -187,29 +189,8 @@ export function EditorGuide({ ready }: { ready: boolean }) {
           if (right > left && bottom > top)
             cutout = { left, top, width: right - left, height: bottom - top };
         }
-        const width = Math.min(368, w - 24);
-        const height = card.current?.getBoundingClientRect().height || 340;
-        let left = (w - width) / 2;
-        let top = (h - height) / 2;
-        if (cutout) {
-          if (w >= 760 && cutout.left + cutout.width + width + 28 < w) {
-            left = cutout.left + cutout.width + 16;
-            top = cutout.top;
-          } else if (cutout.top + cutout.height + height + 28 < h) {
-            left = cutout.left;
-            top = cutout.top + cutout.height + 16;
-          } else if (cutout.top > height + 24) {
-            left = cutout.left;
-            top = cutout.top - height - 16;
-          } else {
-            top = h - height - 12;
-          }
-        }
         setGeometry({
           target: cutout,
-          left: Math.max(12, Math.min(left, w - width - 12)),
-          top: Math.max(12, Math.min(top, h - height - 12)),
-          width,
           viewportWidth: w,
           viewportHeight: h,
         });
@@ -223,7 +204,6 @@ export function EditorGuide({ ready }: { ready: boolean }) {
       if (step === 2 && target) target.closest<HTMLDetailsElement>("details")!.open = true;
       target?.scrollIntoView({ block: "center", inline: "nearest", behavior: "instant" });
       if (target) observer.observe(target);
-      if (card.current) observer.observe(card.current);
       dialog.current
         ?.querySelector<HTMLButtonElement>(".guide-next")
         ?.focus({ preventScroll: true });
@@ -291,16 +271,8 @@ export function EditorGuide({ ready }: { ready: boolean }) {
               />
             )}
           </svg>
-          <div
-            ref={card}
-            className="guide-card"
-            style={
-              geometry
-                ? { left: geometry.left, top: geometry.top, width: geometry.width }
-                : { left: "50%", top: "50%", transform: "translate(-50%,-50%)" }
-            }
-          >
-            <div className="flex items-center justify-between">
+          <div className="guide-card">
+            <div className="flex shrink-0 items-center justify-between">
               <span className="text-primary flex items-center gap-2 text-xs font-semibold">
                 <Compass className="size-4" />
                 {t("新手引导 ·")}
@@ -314,7 +286,7 @@ export function EditorGuide({ ready }: { ready: boolean }) {
                 <X className="size-4" />
               </button>
             </div>
-            <div className="my-4 flex gap-1.5" aria-label={t("引导步骤")}>
+            <div className="my-4 flex shrink-0 gap-1.5" aria-label={t("引导步骤")}>
               {GUIDE_STEPS.map((item, index) => (
                 <button
                   key={item.title}
@@ -327,7 +299,7 @@ export function EditorGuide({ ready }: { ready: boolean }) {
                 </button>
               ))}
             </div>
-            <div aria-live="polite">
+            <div ref={copy} className="guide-copy" aria-live="polite">
               <h2 id="guide-title" className="text-lg font-semibold tracking-tight">
                 {t(current.title)}
               </h2>
@@ -338,7 +310,7 @@ export function EditorGuide({ ready }: { ready: boolean }) {
                 {t(current.detail)}
               </p>
             </div>
-            <div className="mt-5 flex items-center justify-between gap-2">
+            <footer className="guide-actions">
               <button className="text-muted-foreground text-xs hover:underline" onClick={close}>
                 {t("跳过引导")}
               </button>
@@ -365,7 +337,7 @@ export function EditorGuide({ ready }: { ready: boolean }) {
                   <ArrowRight className="size-3.5" />
                 </Button>
               </div>
-            </div>
+            </footer>
           </div>
         </>
       )}

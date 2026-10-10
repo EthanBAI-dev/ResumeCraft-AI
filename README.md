@@ -34,6 +34,8 @@ Write on the left. See the result on the right. Change the design without rewrit
 
 These are **real app renders**, not mockups. Every preview uses the same fictional English resume and the application's actual paper component. Font size and spacing are tuned for these full-page A4 examples; longer content may need more pages. Font availability can affect the result on your device.
 
+The English edition includes an actual English resume—not English buttons around a Chinese document. The rectangular, realistic-looking portrait is AI-generated; the person, employers and achievements are fictional demonstration data.
+
 ![Six complete A4 resumes: Modern, Classic, Minimal, Executive, Editorial and Nordic](docs/images/templates-gallery-en.jpg)
 
 Click a preview to see the full-size page.
@@ -47,6 +49,12 @@ Click a preview to see the full-size page.
 |              Navy header and clear hierarchy.<br>For management and consulting.              |             Warm accent and serif headings.<br>For design, writing and content.              |          Sage green and airy columns.<br>A softer, understated presentation.           |
 
 Switching templates preserves your content. Customize colors, fonts, font size, line height, spacing, margins and column width afterward. Undo restores the previous design.
+
+**Try the exact resume behind a preview:** save its native JSON, then choose **Files → Import**. Each file contains the matching English text, photo and template settings and opens as a new local resume. These are editable source files, not images converted into documents.
+
+[Modern JSON](https://resumecraft-ethan.vercel.app/examples/resume-modern-en.json) · [Classic JSON](https://resumecraft-ethan.vercel.app/examples/resume-classic-en.json) · [Minimal JSON](https://resumecraft-ethan.vercel.app/examples/resume-minimal-en.json) · [Executive JSON](https://resumecraft-ethan.vercel.app/examples/resume-executive-en.json) · [Editorial JSON](https://resumecraft-ethan.vercel.app/examples/resume-editorial-en.json) · [Nordic JSON](https://resumecraft-ethan.vercel.app/examples/resume-nordic-en.json)
+
+If your browser displays JSON instead of downloading it, use **Save page as** or **Save link as** and keep the `.json` extension. Replace all fictional data before using a sample to apply for a job.
 
 ## Design the page, not around it
 
@@ -77,7 +85,7 @@ On small screens, switch between **Edit content** and **Paper preview**. Undo: *
 
 ![The English spotlight tour highlighting the real Content tab](docs/images/tour-en.jpg)
 
-**Help** opens feature instructions and lets you restart or jump into the tour. Loading a sample again asks for confirmation: cancel, replace the current draft (undoable), or create a separate sample.
+**Help** opens feature instructions and lets you restart or jump into the tour. The spotlight follows each feature, but the explanation stays in the bottom-right dock: **Back / Next stay in the same position**, even when a step has more text. Only the explanation scrolls. Loading a sample again asks for confirmation: cancel, replace the current draft (undoable), or create a separate sample.
 
 ## Bring your existing resume
 

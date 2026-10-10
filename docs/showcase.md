@@ -18,11 +18,15 @@
 英文素材生成：
 
 ```bash
-SHOWCASE_OUTPUT=tmp/showcase-en pnpm exec vitest run fixtures/english-showcase.test.tsx
+SHOWCASE_OUTPUT=tmp/showcase-en SHOWCASE_SAMPLES_OUTPUT=public/examples pnpm exec vitest run fixtures/english-showcase.test.tsx
 python3 -m http.server 3104 --bind 127.0.0.1 --directory tmp/showcase-en
 ```
 
 逐个打开 `gallery.html`、六套模板与 `layout.html`，完整页面截图，检查每套最后一个区块没有落到纸外再替换对应素材。SVG 流程图直接维护源文件。所有展示资料仅为虚构示例，禁止使用浏览器里的真实草稿。
+
+`fixtures/english-showcase-resume.ts` 是英文整页预览与 `public/examples/resume-*-en.json` 的共同来源。后者可在网站下载并通过「文件 → 导入」打开，包含同一正文、照片和模板设置。测试会比对已提交 JSON 与渲染源，防止图片与可编辑文件不一致。只设置 `SHOWCASE_OUTPUT` 不更新公开 JSON；两者都未设置时不会生成文件。
+
+新手引导截图需展示固定右下角说明卡，不能继续使用旧版随目标移动的卡片截图。长文单独滚动，底部导航固定；桌面、手机及末步较长的「Start editing」按钮都应检查。
 
 安装项目依赖后，在仓库根目录运行：
 
