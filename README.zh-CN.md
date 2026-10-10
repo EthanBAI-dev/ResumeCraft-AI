@@ -6,7 +6,9 @@
 
 免费、开源、本地优先的简历工作台。六套模板、可视化排版与可选 AI 润色。**无需注册，无需付费，AI 使用自己的 Key。**
 
-**[立即体验 →](https://resumecraft-ethan.vercel.app/builder?lang=zh)** · [English](README.md) · [模板预览](#六套模板同一段经历六种表达) · [本地运行](#本地运行)
+**[中文体验 →](https://resumecraft-ethan.vercel.app/builder?lang=zh)** · **[English demo →](https://resumecraft-ethan.vercel.app/builder?lang=en)**
+
+[English README](README.md) · [模板预览](#六套模板同一段经历六种表达) · [本地运行](#本地运行) · [主站项目资料](integration/README.md)
 
 </div>
 
@@ -141,6 +143,8 @@ pnpm build
 ## 更多文档
 
 [中文使用手册](docs/user-guide.md) · [英文指南](docs/guide.en.md) · [导入 Skill](docs/import-skill.md) · [当前架构](docs/current-architecture.md) · [路线图](docs/04-roadmap.md) · [展示素材维护](docs/showcase.md) · [开发日记](DEVLOG.md)
+
+[主站项目资料](integration/README.md) · [结构化项目数据](integration/project.json)：供另一个网站项目读取的中英文介绍、配图与真实跳转地址。[详细接入说明](integration/SETUP.zh-CN.md)解释域名接入与体积边界；无需把编辑器源码复制进主站。
 
 早期设计笔记保留了已取消的账号/云端构想，当前行为以使用手册与当前架构为准。
 

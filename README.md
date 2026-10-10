@@ -10,7 +10,9 @@ A free, open-source resume workspace with six templates, precise visual layout c
 [![Local first](https://img.shields.io/badge/Data-local--first-4f6b60.svg)](#your-data-your-control)
 [![English & Chinese](https://img.shields.io/badge/UI-English%20%2F%20中文-243d5b.svg)](#getting-started)
 
-**[Try it online →](https://resumecraft-ethan.vercel.app/builder?lang=en)** · [中文文档](README.zh-CN.md) · [Template gallery](#six-templates-one-story) · [Run locally](#run-locally)
+**[Try it in English →](https://resumecraft-ethan.vercel.app/builder?lang=en)** · **[中文体验 →](https://resumecraft-ethan.vercel.app/builder?lang=zh)**
+
+[中文文档](README.zh-CN.md) · [Template gallery](#six-templates-one-story) · [Run locally](#run-locally) · [Main-site project kit](integration/README.md)
 
 </div>
 
@@ -192,6 +194,7 @@ Bug reports, clearer wording, accessibility improvements and templates are welco
 - [Current architecture (Chinese)](docs/current-architecture.md)
 - [Roadmap (Chinese)](docs/04-roadmap.md)
 - [Maintaining real preview assets](docs/showcase.md)
+- [Bilingual main-site project kit](integration/README.md) · [Structured project data](integration/project.json)
 - [Development log (Chinese)](DEVLOG.md)
 
 Early notes describe some canceled account/cloud ideas. Current behavior is documented in the user guide and current architecture, not every historical proposal.

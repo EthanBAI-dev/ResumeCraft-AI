@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "id": "resumecraft",
+  "name": "ResumeCraft",
+  "defaultLanguage": "en",
+  "status": "live",
+  "license": "MIT",
+  "repositoryUrl": "https://github.com/EthanBAI-dev/ResumeCraft-AI",
+  "locales": {
+    "en": {
+      "title": "ResumeCraft — Free, open-source resume builder",
+      "description": "Create your resume with six templates, visual drag-and-drop layout controls and a 12-column field grid. Save multiple drafts locally, switch between English and Chinese, and optionally polish your writing with your own DeepSeek key. No signup required.",
+      "tags": [
+        "Open source",
+        "Local first",
+        "Six templates",
+        "Visual layout",
+        "Bilingual",
+        "Optional AI"
+      ],
+      "websiteUrl": "https://resumecraft-ethan.vercel.app/?lang=en",
+      "editorUrl": "https://resumecraft-ethan.vercel.app/builder?lang=en",
+      "primaryLabel": "Build your resume",
+      "sourceLabel": "View source",
+      "readmeUrl": "https://github.com/EthanBAI-dev/ResumeCraft-AI#readme"
+    },
+    "zh": {
+      "title": "ResumeCraft · 免费开源简历工作台",
+      "description": "六款简历模板，支持区块拖拽与十二格字段排版，多份简历在浏览器本地自动保存。支持中英文，可选 AI 润色并使用自己的 DeepSeek Key，无需注册即可使用。",
+      "tags": ["免费开源", "本地优先", "六款模板", "可视化排版", "中英文", "AI 可选"],
+      "websiteUrl": "https://resumecraft-ethan.vercel.app/?lang=zh",
+      "editorUrl": "https://resumecraft-ethan.vercel.app/builder?lang=zh",
+      "primaryLabel": "开始制作简历",
+      "sourceLabel": "查看源码",
+      "readmeUrl": "https://github.com/EthanBAI-dev/ResumeCraft-AI/blob/main/README.zh-CN.md"
+    }
+  },
+  "assets": {
+    "cover": {
+      "repositoryPath": "docs/images/editor-en.jpg",
+      "url": "https://raw.githubusercontent.com/EthanBAI-dev/ResumeCraft-AI/main/docs/images/editor-en.jpg",
+      "alt": {
+        "en": "ResumeCraft English editor with live resume preview",
+        "zh": "ResumeCraft 英文编辑器与实时简历预览"
+      }
+    },
+    "galleryEn": {
+      "repositoryPath": "docs/images/templates-gallery-en.jpg",
+      "url": "https://raw.githubusercontent.com/EthanBAI-dev/ResumeCraft-AI/main/docs/images/templates-gallery-en.jpg",
+      "alt": { "en": "Six full-page English resume templates", "zh": "六款完整英文简历模板" }
+    },
+    "galleryZh": {
+      "repositoryPath": "docs/images/templates-gallery.jpg",
+      "url": "https://raw.githubusercontent.com/EthanBAI-dev/ResumeCraft-AI/main/docs/images/templates-gallery.jpg",
+      "alt": { "en": "Six full-page Chinese resume templates", "zh": "六款完整中文简历模板" }
+    }
+  },
+  "capabilities": {
+    "freeEditor": true,
+    "loginRequired": false,
+    "cloudResumeSync": false,
+    "localResumeStorage": true,
+    "aiOptional": true,
+    "aiRequiresUserKey": true,
+    "sharedAiQuota": false,
+    "browserPrintPdf": true,
+    "wordExport": true,
+    "jsonImportExport": true,
+    "pdfWorkerIncludedInPublicDemo": false,
+    "sampleDataIsFictional": true
+  },
+  "integration": {
+    "mode": "external-link",
+    "installResumeEditorInMainSite": false,
+    "dnsChangeRequiredForListing": false
+  }
+}
