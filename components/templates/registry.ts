@@ -123,7 +123,15 @@ export function applyTemplateToResume(resume: ResumeData, id: string): ResumeDat
       template: template.id,
       page: { ...resume.metadata.page, columnRatio: template.defaultColumnRatio },
       theme: { ...resume.metadata.theme, primary: template.accent },
-      typography: { ...resume.metadata.typography, fontFamily: template.fontFamily },
+      typography: {
+        ...resume.metadata.typography,
+        fontFamily:
+          resume.metadata.locale === "en-US"
+            ? template.id === "editorial" || template.id === "classic"
+              ? "Georgia"
+              : "Inter"
+            : template.fontFamily,
+      },
     },
   };
 }

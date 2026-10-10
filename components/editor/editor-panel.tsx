@@ -1,4 +1,5 @@
 "use client";
+import { t, useLanguage } from "@/lib/i18n";
 
 import { ChevronDown, Eye, EyeOff, Plus, Trash2, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,8 +12,8 @@ import { useEditorStore } from "@/lib/store/editor-store";
 import { flattenLayout } from "@/lib/layout/operations";
 import { BasicsForm } from "./basics-form";
 import { DesignPanel } from "./design-panel";
-import { SectionEditor } from "./section-editor";
 import { ItemLayoutEditor } from "./item-layout-editor";
+import { SectionEditor } from "./section-editor";
 
 const ADDABLE: SectionType[] = [
   "experience",
@@ -24,6 +25,7 @@ const ADDABLE: SectionType[] = [
 ];
 
 export function EditorPanel() {
+  useLanguage();
   const tab = useEditorStore((state) => state.panelTab);
   const setTab = useEditorStore((state) => state.setPanelTab);
   return (
@@ -36,15 +38,17 @@ export function EditorPanel() {
         <p className="text-primary text-[10px] font-semibold tracking-[0.22em]">
           YOUR NEXT CHAPTER
         </p>
-        <h1 className="mt-1 text-xl font-semibold tracking-tight">让经历，被看见。</h1>
-        <p className="text-muted-foreground mt-1 text-xs">打磨内容，选择版式，准备下一次机会。</p>
+        <h1 className="mt-1 text-xl font-semibold tracking-tight">{t("让经历，被看见。")}</h1>
+        <p className="text-muted-foreground mt-1 text-xs">
+          {t("打磨内容，选择版式，准备下一次机会。")}
+        </p>
       </div>
       <TabsList className="mx-3 mt-3 grid w-auto grid-cols-2">
         <TabsTrigger value="content" data-tour="content">
-          内容
+          {t("内容")}
         </TabsTrigger>
         <TabsTrigger value="design" data-tour="design">
-          模板与样式
+          {t("模板与样式")}
         </TabsTrigger>
       </TabsList>
 
@@ -68,6 +72,7 @@ export function EditorPanel() {
 }
 
 function ContentSections() {
+  useLanguage();
   const layout = useResume((s) => s.resume.layout);
   const sections = useResume((s) => s.resume.sections);
   const addSection = useResumeStore((s) => s.addSection);
@@ -79,7 +84,7 @@ function ContentSections() {
 
   return (
     <>
-      <CollapsibleBlock id="basics" title="基本信息" icon={<User className="size-4" />}>
+      <CollapsibleBlock id="basics" title={t("基本信息")} icon={<User className="size-4" />}>
         <BasicsForm />
         <ItemLayoutEditor sectionId="basics" sectionType="basics" />
       </CollapsibleBlock>
@@ -91,12 +96,12 @@ function ContentSections() {
         ))}
 
       <div className="pt-2" data-tour="add-section">
-        <p className="text-muted-foreground mb-2 text-xs font-medium">添加区块</p>
+        <p className="text-muted-foreground mb-2 text-xs font-medium">{t("添加区块")}</p>
         <div className="flex flex-wrap gap-2">
           {ADDABLE.map((type) => (
             <Button key={type} variant="outline" size="sm" onClick={() => expand(addSection(type))}>
               <Plus className="size-3.5" />
-              {SECTION_TYPE_LABELS[type]}
+              {t(SECTION_TYPE_LABELS[type])}
             </Button>
           ))}
         </div>
@@ -106,6 +111,7 @@ function ContentSections() {
 }
 
 function SectionBlockWrapper({ sectionId }: { sectionId: string }) {
+  useLanguage();
   const section = useResume((s) => s.resume.sections[sectionId]);
   const toggleVisible = useResumeStore((s) => s.toggleSectionVisible);
   const removeSection = useResumeStore((s) => s.removeSection);
@@ -125,7 +131,7 @@ function SectionBlockWrapper({ sectionId }: { sectionId: string }) {
           <Button
             variant="ghost"
             size="icon"
-            aria-label={section.visible ? `隐藏${section.name}` : `显示${section.name}`}
+            aria-label={section.visible ? t("隐藏{0}", section.name) : t("显示{0}", section.name)}
             onClick={(e) => {
               e.stopPropagation();
               toggleVisible(sectionId);
@@ -136,7 +142,7 @@ function SectionBlockWrapper({ sectionId }: { sectionId: string }) {
           <Button
             variant="ghost"
             size="icon"
-            aria-label={`删除${section.name}`}
+            aria-label={t("删除{0}", section.name)}
             onClick={(e) => {
               e.stopPropagation();
               removeSection(sectionId);
@@ -169,6 +175,7 @@ function CollapsibleBlock({
   dimmed?: boolean;
   children: React.ReactNode;
 }) {
+  useLanguage();
   const expanded = useEditorStore((s) => s.expandedSections.includes(id));
   const toggle = useEditorStore((s) => s.toggleExpanded);
   const setActive = useEditorStore((s) => s.setActiveSection);
@@ -181,7 +188,7 @@ function CollapsibleBlock({
           className="hover:bg-accent flex min-w-0 flex-1 items-center gap-2 rounded px-1 py-1 text-left"
           aria-expanded={expanded}
           aria-controls={`panel-${id}`}
-          aria-label={`${expanded ? "收起" : "展开"}${title}`}
+          aria-label={t("{0}{1}", expanded ? "收起" : "展开", title)}
           onClick={() => {
             toggle(id);
             setActive(id);

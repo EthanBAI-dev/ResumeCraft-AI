@@ -14,6 +14,7 @@ import {
   type AtomicLayoutType,
 } from "@/lib/layout/item-layout";
 import { formatDateRange, joinNonEmpty } from "./formatters";
+import { en } from "@/lib/i18n/en";
 
 /**
  * 渲染块全部是纯组件（只吃 props，不碰 store）。
@@ -91,6 +92,7 @@ function AtomicGrid({
           data-item-slot={atom.field}
           data-span={atom.span}
           data-guide-label={`${fieldDefinition(type, atom.field)?.label ?? atom.field} · ${atom.span}/12 格${atom.breakBefore ? " · ↵ 强制换行" : ""}`}
+          data-guide-label-en={`${en[fieldDefinition(type, atom.field)?.label ?? ""] ?? atom.field} · ${atom.span}/12 columns${atom.breakBefore ? " · ↵ new row" : ""}`}
           data-break-before={atom.breakBefore || undefined}
           style={{
             gridColumn: atom.breakBefore ? `1 / span ${atom.span}` : `span ${atom.span}`,
@@ -109,12 +111,12 @@ function hasContent(node: ReactNode) {
 }
 
 /** Shared by template headers, custom grids, and standalone PDF rendering. */
-function ResumePhoto({ photo }: { photo: Basics["photo"] }) {
+function ResumePhoto({ photo, locale }: { photo: Basics["photo"]; locale: Metadata["locale"] }) {
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
       src={photo.url}
-      alt="简历照片"
+      alt={locale === "en-US" ? "Resume photo" : "简历照片"}
       width={photo.size}
       height={photo.size * 1.25}
       style={{
@@ -135,12 +137,14 @@ function ResumePhoto({ photo }: { photo: Basics["photo"] }) {
 export const BasicsBlock = memo(function BasicsBlock({
   basics,
   layout,
+  locale = "zh-CN",
 }: {
   basics: Basics;
   layout?: ItemLayoutConfig;
+  locale?: Metadata["locale"];
 }) {
   // Keep the selected template's header until the user customizes its fields.
-  if (!layout) return <TemplateBasics basics={basics} />;
+  if (!layout) return <TemplateBasics basics={basics} locale={locale} />;
   const customFields = basics.customFields.filter((field) => field.value.trim());
   const photo = basics.photo.visible && basics.photo.url;
   if (
@@ -162,7 +166,7 @@ export const BasicsBlock = memo(function BasicsBlock({
         type="basics"
         layout={layout}
         fields={{
-          photo: photo ? <ResumePhoto photo={basics.photo} /> : null,
+          photo: photo ? <ResumePhoto photo={basics.photo} locale={locale} /> : null,
           primary: basics.name ? <div className="resume-basics__name">{basics.name}</div> : null,
           headline: basics.headline ? <div className="resume-muted">{basics.headline}</div> : null,
           phone: basics.phone ? <span className="resume-muted">{basics.phone}</span> : null,
@@ -188,7 +192,7 @@ export const BasicsBlock = memo(function BasicsBlock({
   );
 });
 
-function TemplateBasics({ basics }: { basics: Basics }) {
+function TemplateBasics({ basics, locale }: { basics: Basics; locale: Metadata["locale"] }) {
   const contacts = [
     basics.phone,
     basics.email,
@@ -208,7 +212,9 @@ function TemplateBasics({ basics }: { basics: Basics }) {
         className="resume-basics__identity"
         style={{ display: "flex", alignItems: "center", gap: "1em" }}
       >
-        {basics.photo.visible && basics.photo.url ? <ResumePhoto photo={basics.photo} /> : null}
+        {basics.photo.visible && basics.photo.url ? (
+          <ResumePhoto photo={basics.photo} locale={locale} />
+        ) : null}
         <div style={{ minWidth: 0 }}>
           {basics.name && <div className="resume-basics__name">{basics.name}</div>}
           {basics.headline && <div className="resume-muted">{basics.headline}</div>}
@@ -353,7 +359,10 @@ function ItemBlock({
           <div>
             <span className="resume-item__title">{it.name}</span>
             {it.keywords.length > 0 ? (
-              <span className="resume-muted">：{it.keywords.join(" / ")}</span>
+              <span className="resume-muted">
+                {locale === "en-US" ? ": " : "："}
+                {it.keywords.join(" / ")}
+              </span>
             ) : null}
           </div>
         </article>

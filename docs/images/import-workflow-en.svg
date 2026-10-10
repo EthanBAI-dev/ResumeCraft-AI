@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="430" viewBox="0 0 1440 430" role="img" aria-labelledby="title desc">
+  <title id="title">From your existing resume to a new layout</title>
+  <desc id="desc">Give the file to a compatible assistant with the import Skill, review facts and JSON, then import and design in ResumeCraft. The website directly imports JSON only.</desc>
+  <rect width="1440" height="430" rx="20" fill="#eef1ed"/>
+  <g font-family="Arial,sans-serif" fill="#213e38">
+    <text x="48" y="45" font-size="12" letter-spacing="3">RESUMECRAFT / BRING YOUR EXPERIENCE</text>
+    <text x="48" y="94" font-size="36" font-weight="700">Your facts. A fresh start.</text>
+    <g transform="translate(48,130)"><rect width="420" height="235" rx="14" fill="#fff" stroke="#d7e1da"/><text x="24" y="44" font-size="26" fill="#8fa89d">01</text><text x="24" y="87" font-size="23" font-weight="700">Give your file to the Skill</text><text x="24" y="125" font-size="17">PDF, Word, image, text or JSON.</text><text x="24" y="154" font-size="17">An AI assistant extracts your facts.</text><text x="24" y="200" font-size="13" fill="#677b74">Scans need OCR / vision tools.</text></g>
+    <g transform="translate(510,130)"><rect width="420" height="235" rx="14" fill="#fff" stroke="#d7e1da"/><text x="24" y="44" font-size="26" fill="#8fa89d">02</text><text x="24" y="87" font-size="23" font-weight="700">Review, then import</text><text x="24" y="125" font-size="17">Check facts and flagged uncertainties.</text><text x="24" y="154" font-size="17">Files → Import the validated JSON.</text><text x="24" y="200" font-size="13" fill="#677b74">New draft. Your old resume stays intact.</text></g>
+    <g transform="translate(972,130)"><rect width="420" height="235" rx="14" fill="#fff" stroke="#d7e1da"/><text x="24" y="44" font-size="26" fill="#8fa89d">03</text><text x="24" y="87" font-size="23" font-weight="700">Design and export</text><text x="24" y="125" font-size="17">Choose a template. Arrange your fields.</text><text x="24" y="154" font-size="17">Review the page and export.</text><text x="24" y="200" font-size="13" fill="#677b74">Editing and local exports need no key.</text></g>
+    <text x="48" y="403" font-size="13" fill="#677b74">The Skill runs in your assistant. ResumeCraft imports JSON, not raw PDF / DOCX or scanned images.</text>
+  </g>
+</svg>

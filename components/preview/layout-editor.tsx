@@ -1,4 +1,5 @@
 "use client";
+import { t, useLanguage } from "@/lib/i18n";
 
 import { useState, type ReactNode } from "react";
 import {
@@ -46,6 +47,7 @@ function parseSectionId(id: string): string | null {
  * 可放置栏和可排序区块，不复制任意一行简历 DOM。
  */
 export function LayoutEditor({ resume }: { resume: ResumeData }) {
+  useLanguage();
   const moveSectionTo = useResumeStore((state) => state.moveSectionTo);
   const [activeSectionId, setActiveSectionId] = useState<string | null>(null);
   const [overSectionId, setOverSectionId] = useState<string | null>(null);
@@ -98,10 +100,11 @@ export function LayoutEditor({ resume }: { resume: ResumeData }) {
       }}
       accessibility={{
         announcements: {
-          onDragStart: ({ active }) => `开始移动 ${parseSectionId(String(active.id)) ?? "区块"}`,
-          onDragOver: ({ over }) => (over ? "已找到可放置位置" : "未找到可放置位置"),
-          onDragEnd: ({ over }) => (over ? "区块已移动" : "已取消移动"),
-          onDragCancel: () => "已取消移动",
+          onDragStart: ({ active }) =>
+            t("开始移动 {0}", parseSectionId(String(active.id)) ?? "区块"),
+          onDragOver: ({ over }) => (over ? t("已找到可放置位置") : t("未找到可放置位置")),
+          onDragEnd: ({ over }) => (over ? t("区块已移动") : t("已取消移动")),
+          onDragCancel: () => t("已取消移动"),
         },
       }}
     >
@@ -124,7 +127,7 @@ export function LayoutEditor({ resume }: { resume: ResumeData }) {
         )}
       />
       <DragOverlay dropAnimation={null}>
-        {activeSectionId ? <div className="layout-drag-overlay">移动区块</div> : null}
+        {activeSectionId ? <div className="layout-drag-overlay">{t("移动区块")}</div> : null}
       </DragOverlay>
     </DndContext>
   );
@@ -141,6 +144,7 @@ function SortableColumn({
   ids: readonly string[];
   children: ReactNode;
 }) {
+  useLanguage();
   const { isOver, setNodeRef } = useDroppable({
     id: columnDndId(page, column),
     data: { kind: "column", page, column },
@@ -164,6 +168,7 @@ function SortableSection({
   isDropTarget: boolean;
   children: ReactNode;
 }) {
+  useLanguage();
   const isActive = useEditorStore((state) => state.activeSectionId === id);
   const { attributes, isDragging, listeners, setNodeRef, transform, transition } = useSortable({
     id: sectionDndId(id),
@@ -185,8 +190,8 @@ function SortableSection({
       <button
         type="button"
         className="layout-drag-handle"
-        aria-label={`拖动区块 ${id}`}
-        title="拖动排序；键盘可用空格键拾取"
+        aria-label={t("拖动区块 {0}", id)}
+        title={t("拖动排序；键盘可用空格键拾取")}
         {...attributes}
         {...listeners}
       >

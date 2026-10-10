@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { BuilderShell } from "./builder-shell";
 
 export const metadata: Metadata = {
-  title: "编辑器 · ResumeCraft",
+  title: "Resume builder · ResumeCraft",
 };
 
 export default function BuilderPage() {

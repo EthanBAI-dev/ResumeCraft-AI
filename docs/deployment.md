@@ -4,7 +4,7 @@
 
 ## Vercel 首版
 
-当前生产使用 `codex/vercel-release` 分支。远端 `main` 另有 Sites 部署与旧版 AI 审阅提交，因此本次不覆盖或强推 `main`。Vercel 的 Production Branch 已设为发布分支，后续向该分支推送会触发生产部署。仓库已提供 `vercel.json` 和 Node.js 24 版本约束。
+当前生产分支为 `main`。英文界面、双语 README 与本地优先发布版通过合并保留了原 `main` 的 Sites 部署文件，不强推或丢弃历史。向 `main` 推送会触发 Vercel 生产部署。仓库已提供 `vercel.json` 和 Node.js 24 版本约束。[英文使用与部署指南](guide.en.md)
 
 ### 2026-10-10 首次上线记录
 

@@ -1,4 +1,5 @@
 "use client";
+import { getLanguage, t, useLanguage } from "@/lib/i18n";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,7 @@ import {
 } from "@/lib/store/library";
 import { LocalDialog } from "./local-dialog";
 export function ResumeLibrary({ onClose }: { onClose: () => void }) {
+  useLanguage();
   const entries = useLibraryStore((s) => s.entries);
   const activeId = useLibraryStore((s) => s.activeId);
   const [busy, setBusy] = useState(false);
@@ -21,16 +23,17 @@ export function ResumeLibrary({ onClose }: { onClose: () => void }) {
     try {
       await action();
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "操作失败，数据未清除");
+      toast.error(e instanceof Error ? t(e.message) : t("操作失败，数据未清除"));
     } finally {
       setBusy(false);
     }
   }
   return (
-    <LocalDialog title="我的简历" onClose={onClose}>
+    <LocalDialog title={t("我的简历")} onClose={onClose}>
       <p className="text-muted-foreground text-sm">
-        免费使用，无需登录。简历仅保存在当前浏览器，不会跨设备同步；清理浏览器前请逐份导出 JSON
-        备份。
+        {t(
+          "免费使用，无需登录。简历仅保存在当前浏览器，不会跨设备同步；清理浏览器前请逐份导出 JSON 备份。",
+        )}
       </p>
       <Button
         disabled={busy}
@@ -41,7 +44,7 @@ export function ResumeLibrary({ onClose }: { onClose: () => void }) {
           })
         }
       >
-        新建空白简历
+        {t("新建空白简历")}
       </Button>
       <div className="space-y-3">
         {entries.map((entry) => (
@@ -50,9 +53,10 @@ export function ResumeLibrary({ onClose }: { onClose: () => void }) {
             className={`rounded-xl border p-3 ${entry.id === activeId ? "border-primary bg-teal-50/50" : ""}`}
           >
             <label className="text-muted-foreground text-xs">
-              简历名称{entry.id === activeId ? " · 当前编辑" : ""}
+              {t("简历名称")}
+              {entry.id === activeId ? t(" · 当前编辑") : ""}
               <Input
-                aria-label={`简历名称 ${entry.title}`}
+                aria-label={t("简历名称 {0}", entry.title)}
                 defaultValue={entry.title}
                 maxLength={80}
                 disabled={busy}
@@ -63,8 +67,8 @@ export function ResumeLibrary({ onClose }: { onClose: () => void }) {
               />
             </label>
             <p className="text-muted-foreground my-2 text-xs">
-              {entry.data.basics.name || "尚未填写姓名"} ·{" "}
-              {new Date(entry.updatedAt).toLocaleString("zh-CN")}
+              {entry.data.basics.name || t("尚未填写姓名")} ·{" "}
+              {new Date(entry.updatedAt).toLocaleString(getLanguage())}
             </p>
             <div className="flex flex-wrap gap-2">
               <Button
@@ -77,7 +81,8 @@ export function ResumeLibrary({ onClose }: { onClose: () => void }) {
                   })
                 }
               >
-                打开 {entry.title}
+                {t("打开")}
+                {entry.title}
               </Button>
               <Button
                 size="sm"
@@ -85,12 +90,13 @@ export function ResumeLibrary({ onClose }: { onClose: () => void }) {
                 disabled={busy}
                 onClick={() =>
                   void run(async () => {
-                    await createLocalResume(`${entry.title} · 副本`, entry.data);
+                    await createLocalResume(t("{0} · 副本", entry.title), entry.data);
                     onClose();
                   })
                 }
               >
-                复制 {entry.title}
+                {t("复制")}
+                {entry.title}
               </Button>
               <Button
                 size="sm"
@@ -98,12 +104,17 @@ export function ResumeLibrary({ onClose }: { onClose: () => void }) {
                 disabled={busy}
                 onClick={() => setDeleting(entry.id)}
               >
-                删除 {entry.title}
+                {t("删除")}
+                {entry.title}
               </Button>
             </div>
             {deleting === entry.id && (
               <div className="mt-3 rounded-lg bg-red-50 p-3 text-sm" role="alert">
-                <p>删除「{entry.title}」后不能撤销。请先导出 JSON 备份。</p>
+                <p>
+                  {t("删除「")}
+                  {entry.title}
+                  {t("」后不能撤销。请先导出 JSON 备份。")}
+                </p>
                 <div className="mt-2 flex gap-2">
                   <Button
                     variant="destructive"
@@ -115,10 +126,10 @@ export function ResumeLibrary({ onClose }: { onClose: () => void }) {
                       })
                     }
                   >
-                    确认删除
+                    {t("确认删除")}
                   </Button>
                   <Button variant="outline" onClick={() => setDeleting(null)}>
-                    取消
+                    {t("取消")}
                   </Button>
                 </div>
               </div>

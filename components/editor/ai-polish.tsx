@@ -1,4 +1,5 @@
 "use client";
+import { t, useLanguage } from "@/lib/i18n";
 
 import { useEffect, useId, useRef, useState } from "react";
 import { Check, Loader2, Sparkles, X } from "lucide-react";
@@ -20,6 +21,7 @@ export function AiPolish({
   itemId: string;
   highlights: string[];
 }) {
+  useLanguage();
   const id = useId();
   const personalKey = useAiSettings((s) => s.apiKey);
   const [open, setOpen] = useState(false);
@@ -56,7 +58,7 @@ export function AiPolish({
     controller.current?.abort();
     controller.current = null;
     setBusy(false);
-    setNotice("已停止生成，简历内容未变更。");
+    setNotice(t("已停止生成，简历内容未变更。"));
   }
 
   async function generate() {
@@ -71,7 +73,7 @@ export function AiPolish({
     if (!item || !("highlights" in item)) return;
     const source = [...item.highlights];
     if (mode === "rewrite" && !source[index]?.trim()) {
-      setError("请先选择一条有内容的要点。");
+      setError(t("请先选择一条有内容的要点。"));
       return;
     }
     const current = new AbortController();
@@ -105,12 +107,12 @@ export function AiPolish({
       if (!response.ok) {
         if (payload.error?.code === "configuration") {
           setConfigured(false);
-          throw new Error("请打开顶部「AI 设置」，输入自己的 DeepSeek API Key 后重试。");
+          throw new Error(t("请打开顶部「AI 设置」，输入自己的 DeepSeek API Key 后重试。"));
         }
-        throw new Error(payload.error?.message || "生成失败，请稍后重试。");
+        throw new Error(payload.error?.message || t("生成失败，请稍后重试。"));
       }
       const parsed = ResumeAiOutputSchema.safeParse(payload.data);
-      if (!parsed.success) throw new Error("AI 返回的内容格式不完整，请重新生成。");
+      if (!parsed.success) throw new Error(t("AI 返回的内容格式不完整，请重新生成。"));
       if (controller.current !== current || current.signal.aborted) return;
       setConfigured(true);
       setReview({
@@ -123,10 +125,10 @@ export function AiPolish({
       if (controller.current !== current) return;
       setError(
         current.signal.aborted
-          ? "生成等待超时，请重试。"
+          ? t("生成等待超时，请重试。")
           : cause instanceof Error
-            ? cause.message
-            : "无法连接 AI 服务，请检查网络后重试。",
+            ? t(cause.message)
+            : t("无法连接 AI 服务，请检查网络后重试。"),
       );
     } finally {
       clearTimeout(timeout);
@@ -145,12 +147,12 @@ export function AiPolish({
     if (review.index < 0) next.push(...chosen);
     else next.splice(review.index, 1, ...chosen);
     if (!useResumeStore.getState().applyAiHighlights(sectionId, itemId, review.source, next)) {
-      setError("原文已被修改或条目已删除。为保留最新内容，请重新生成建议。");
+      setError(t("原文已被修改或条目已删除。为保留最新内容，请重新生成建议。"));
       return;
     }
     setReview(null);
-    setNotice("已采用所选建议，可通过撤销恢复原文。");
-    toast.success("AI 建议已应用");
+    setNotice(t("已采用所选建议，可通过撤销恢复原文。"));
+    toast.success(t("AI 建议已应用"));
   }
 
   return (
@@ -168,15 +170,20 @@ export function AiPolish({
         }}
       >
         <Sparkles className="size-3.5" />
-        {open ? "收起 AI 助手" : "AI 润色 / 生成要点"}
+        {open ? t("收起 AI 助手") : t("AI 润色 / 生成要点")}
       </Button>
       {open && (
-        <section id={`${id}-panel`} className="ai-panel mt-2 space-y-3" aria-label="AI 经历助手">
+        <section
+          id={`${id}-panel`}
+          className="ai-panel mt-2 space-y-3"
+          aria-label={t("AI 经历助手")}
+        >
           <div>
-            <h3 className="text-primary text-sm font-semibold">把经历写得更有说服力</h3>
+            <h3 className="text-primary text-sm font-semibold">{t("把经历写得更有说服力")}</h3>
             <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
-              仅发送选中的要点或你输入的经历、目标岗位和可选 JD 给所配置的 AI
-              服务。建议经你确认后才会写入。
+              {t(
+                "仅发送选中的要点或你输入的经历、目标岗位和可选 JD 给所配置的 AI 服务。建议经你确认后才会写入。",
+              )}
             </p>
           </div>
           {configured === false && !personalKey && (
@@ -184,12 +191,12 @@ export function AiPolish({
               role="status"
               className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs leading-relaxed text-amber-900"
             >
-              AI 尚未配置。请在「AI 设置」中输入自己的 DeepSeek Key；编辑和导出无需密钥。
+              {t("AI 尚未配置。请在「AI 设置」中输入自己的 DeepSeek Key；编辑和导出无需密钥。")}
               <button
                 className="ml-1 underline"
                 onClick={() => useAiSettings.getState().setOpen(true)}
               >
-                打开 AI 设置
+                {t("打开 AI 设置")}
               </button>
             </div>
           )}
@@ -204,7 +211,7 @@ export function AiPolish({
                   setReview(null);
                 }}
               >
-                润色已有要点
+                {t("润色已有要点")}
               </Button>
               <Button
                 size="sm"
@@ -215,13 +222,13 @@ export function AiPolish({
                   setReview(null);
                 }}
               >
-                从经历生成
+                {t("从经历生成")}
               </Button>
             </div>
             {mode === "rewrite" ? (
               <>
                 <label className="block text-xs font-medium" htmlFor={`${id}-source`}>
-                  选择要润色的要点
+                  {t("选择要润色的要点")}
                 </label>
                 <select
                   id={`${id}-source`}
@@ -233,16 +240,16 @@ export function AiPolish({
                   }}
                 >
                   {highlights.length === 0 && (
-                    <option value={0}>请先添加要点，或切换到从经历生成</option>
+                    <option value={0}>{t("请先添加要点，或切换到从经历生成")}</option>
                   )}
                   {highlights.map((value, i) => (
                     <option key={i} value={i}>
-                      {i + 1}. {value.slice(0, 45) || "（空白要点）"}
+                      {i + 1}. {value.slice(0, 45) || t("（空白要点）")}
                     </option>
                   ))}
                 </select>
                 <label className="flex items-center gap-2 text-xs" htmlFor={`${id}-tone`}>
-                  表达风格
+                  {t("表达风格")}
                   <select
                     id={`${id}-tone`}
                     className="h-8 flex-1 rounded-lg border bg-white px-2"
@@ -252,15 +259,15 @@ export function AiPolish({
                       setReview(null);
                     }}
                   >
-                    <option value="professional">专业清晰</option>
-                    <option value="concise">简短精炼</option>
-                    <option value="impactful">突出贡献</option>
+                    <option value="professional">{t("专业清晰")}</option>
+                    <option value="concise">{t("简短精炼")}</option>
+                    <option value="impactful">{t("突出贡献")}</option>
                   </select>
                 </label>
               </>
             ) : (
               <label className="block text-xs font-medium" htmlFor={`${id}-raw`}>
-                用自己的话描述经历
+                {t("用自己的话描述经历")}
                 <textarea
                   id={`${id}-raw`}
                   className="mt-2 min-h-24 w-full rounded-lg border bg-white p-2 text-sm"
@@ -270,16 +277,18 @@ export function AiPolish({
                     setRaw(e.target.value);
                     setReview(null);
                   }}
-                  placeholder="做了什么、用到什么方法、产生了什么结果？没有准确数字可以先不填。"
+                  placeholder={t(
+                    "做了什么、用到什么方法、产生了什么结果？没有准确数字可以先不填。",
+                  )}
                 />
               </label>
             )}
             <details>
               <summary className="text-muted-foreground cursor-pointer text-xs">
-                针对岗位优化（可选）
+                {t("针对岗位优化（可选）")}
               </summary>
               <label className="mt-2 block text-xs" htmlFor={`${id}-jd`}>
-                岗位描述 JD
+                {t("岗位描述 JD")}
                 <textarea
                   id={`${id}-jd`}
                   className="mt-1 min-h-20 w-full rounded-lg border bg-white p-2 text-xs"
@@ -289,7 +298,7 @@ export function AiPolish({
                     setJd(e.target.value);
                     setReview(null);
                   }}
-                  placeholder="粘贴目标岗位描述，建议将优先突出相关经历"
+                  placeholder={t("粘贴目标岗位描述，建议将优先突出相关经历")}
                 />
               </label>
             </details>
@@ -305,11 +314,11 @@ export function AiPolish({
               ) : (
                 <Sparkles className="size-3.5" />
               )}
-              {busy ? "正在生成建议…" : review ? "重新生成" : "生成建议"}
+              {busy ? t("正在生成建议…") : review ? t("重新生成") : t("生成建议")}
             </Button>
             {busy && (
               <Button variant="outline" size="sm" onClick={cancel}>
-                停止生成
+                {t("停止生成")}
               </Button>
             )}
           </div>
@@ -324,23 +333,28 @@ export function AiPolish({
             </p>
           )}
           {review && (
-            <div className="border-primary/15 space-y-3 border-t pt-3" aria-label="AI 建议审阅">
+            <div
+              className="border-primary/15 space-y-3 border-t pt-3"
+              aria-label={t("AI 建议审阅")}
+            >
               {review.index >= 0 && (
                 <div className="rounded-lg bg-white p-3">
                   <p className="text-muted-foreground mb-1 text-[10px] font-semibold tracking-widest">
-                    原文
+                    {t("原文")}
                   </p>
                   <p className="text-xs leading-relaxed">{review.source[review.index]}</p>
                 </div>
               )}
-              <p className="text-primary text-xs font-semibold">建议版本 · 勾选要采用的内容</p>
+              <p className="text-primary text-xs font-semibold">
+                {t("建议版本 · 勾选要采用的内容")}
+              </p>
               {review.highlights.map((value, i) => (
                 <label
                   key={i}
                   className="border-primary/15 flex items-start gap-2 rounded-lg border bg-white p-3 text-xs leading-relaxed"
                 >
                   <input
-                    aria-label={`采用建议 ${i + 1}`}
+                    aria-label={t("采用建议 {0}", i + 1)}
                     className="mt-1 accent-[#25635b]"
                     type="checkbox"
                     checked={review.selected[i]}
@@ -356,19 +370,19 @@ export function AiPolish({
               ))}
               {review.missingFacts.length > 0 && (
                 <div className="rounded-lg bg-amber-50 p-3 text-xs leading-relaxed text-amber-900">
-                  <p className="font-medium">补充这些事实，会更有说服力</p>
+                  <p className="font-medium">{t("补充这些事实，会更有说服力")}</p>
                   <ul className="mt-1 list-disc pl-4">
                     {review.missingFacts.map((fact, i) => (
                       <li key={i}>{fact}</li>
                     ))}
                   </ul>
-                  <p className="mt-2">请核实内容，不要填入未经确认的数字。</p>
+                  <p className="mt-2">{t("请核实内容，不要填入未经确认的数字。")}</p>
                 </div>
               )}
               {review.index >= 0 && review.highlights.length === 1 && (
                 <details className="rounded-lg border bg-white p-3 text-xs">
                   <summary className="cursor-pointer font-medium">
-                    查看文字修改 · 删除 / 新增
+                    {t("查看文字修改 · 删除 / 新增")}
                   </summary>
                   <p className="mt-2 leading-relaxed">
                     {diffText(review.source[review.index], review.highlights[0]).map((part, i) =>
@@ -390,7 +404,7 @@ export function AiPolish({
               <div className="flex flex-wrap gap-2">
                 <Button size="sm" disabled={!review.selected.some(Boolean)} onClick={accept}>
                   <Check className="size-3.5" />
-                  采用所选建议
+                  {t("采用所选建议")}
                 </Button>
                 <Button
                   size="sm"
@@ -398,11 +412,11 @@ export function AiPolish({
                   onClick={() => {
                     setReview(null);
                     setError("");
-                    setNotice("建议已放弃，原文未变更。");
+                    setNotice(t("建议已放弃，原文未变更。"));
                   }}
                 >
                   <X className="size-3.5" />
-                  放弃
+                  {t("放弃")}
                 </Button>
               </div>
             </div>

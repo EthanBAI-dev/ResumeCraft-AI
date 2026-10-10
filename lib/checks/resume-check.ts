@@ -8,7 +8,11 @@ export type ResumeIssue = {
   reason: string;
   level: "check" | "suggestion";
 };
-export function checkResume(resume: ResumeData): ResumeIssue[] {
+export function checkResume(
+  resume: ResumeData,
+  translate: (text: string, ...values: unknown[]) => string = (text, ...values) =>
+    text.replace(/\{(\d+)\}/g, (_, i) => String(values[Number(i)] ?? "")),
+): ResumeIssue[] {
   const issues: ResumeIssue[] = [];
   const add = (
     id: string,
@@ -16,7 +20,7 @@ export function checkResume(resume: ResumeData): ResumeIssue[] {
     title: string,
     reason: string,
     level: ResumeIssue["level"] = "check",
-  ) => issues.push({ id, sectionId, title, reason, level });
+  ) => issues.push({ id, sectionId, title: translate(title), reason: translate(reason), level });
   if (!resume.basics.name.trim())
     add("name", "basics", "填写姓名", "目前姓名为空，阅读者无法确认这份简历属于谁。");
   if (!resume.basics.email.trim() && !resume.basics.phone.trim())
@@ -54,7 +58,7 @@ export function checkResume(resume: ResumeData): ResumeIssue[] {
         add(
           `title-${item.id}`,
           id,
-          `${section.name}有空标题`,
+          translate("{0}有空标题", section.name),
           "这条经历还没有公司、学校或项目等名称，请补全或移除空条目。",
         );
       if (
@@ -70,7 +74,7 @@ export function checkResume(resume: ResumeData): ResumeIssue[] {
           `date-${item.id}`,
           id,
           "开始日期晚于结束日期",
-          `请核对「${title || section.name}」的经历时间。`,
+          translate("请核对「{0}」的经历时间。", title || section.name),
         );
       if ("highlights" in item && item.highlights.some((t) => t.length > 180))
         add(

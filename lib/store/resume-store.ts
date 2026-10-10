@@ -6,6 +6,8 @@ import { immer } from "zustand/middleware/immer";
 import { current } from "immer";
 import { temporal } from "zundo";
 import { HISTORY_LIMIT } from "@/lib/constants";
+import { t } from "@/lib/i18n";
+import { SECTION_TYPE_LABELS } from "@/lib/schema/section";
 import {
   insertSection,
   normalizeLayout,
@@ -137,7 +139,7 @@ export const useResumeStore = create<ResumeStore>()(
         }),
 
       addSection: (type, name) => {
-        const section = createSection(type, name);
+        const section = createSection(type, name ?? t(SECTION_TYPE_LABELS[type]));
         set((state) => {
           state.resume.sections[section.id] = section;
           // 新区块落在第 1 页主栏末尾，用户随后可以拖走

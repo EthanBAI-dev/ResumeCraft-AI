@@ -13,6 +13,17 @@
 
 ## 重新生成
 
+英文版主 README 使用 `fixtures/english-sample-resume.ts` 的虚构资料，通过 `fixtures/english-showcase.test.tsx` 同样渲染六套实际模板。图片后缀为 `-en.jpg`。`editor-en.jpg` 与 `tour-en.jpg` 是英文编辑器桌面验证时的实际截图；`import-workflow-en.svg` 是流程示意，不冒充内建识别界面。
+
+英文素材生成：
+
+```bash
+SHOWCASE_OUTPUT=tmp/showcase-en pnpm exec vitest run fixtures/english-showcase.test.tsx
+python3 -m http.server 3104 --bind 127.0.0.1 --directory tmp/showcase-en
+```
+
+逐个打开 `gallery.html`、六套模板与 `layout.html`，完整页面截图，检查每套最后一个区块没有落到纸外再替换对应素材。SVG 流程图直接维护源文件。所有展示资料仅为虚构示例，禁止使用浏览器里的真实草稿。
+
 安装项目依赖后，在仓库根目录运行：
 
 ```bash

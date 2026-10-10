@@ -1,4 +1,5 @@
 "use client";
+import { t, useLanguage } from "@/lib/i18n";
 
 import { useState } from "react";
 import {
@@ -56,6 +57,7 @@ export function ItemLayoutEditor({
   sectionId: string;
   sectionType: AtomicLayoutType;
 }) {
+  useLanguage();
   const saved = useResume((state) => state.resume.metadata.itemLayouts?.[sectionId]);
   const updateMetadata = useResumeStore((state) => state.updateMetadata);
   const source = saved ?? DEFAULT_ITEM_LAYOUT;
@@ -116,13 +118,14 @@ export function ItemLayoutEditor({
       onFocusCapture={() => useEditorStore.getState().setActiveSection(sectionId)}
     >
       <summary className="cursor-pointer text-sm font-medium" data-tour="field-layout">
-        字段排版 · 12 格{" "}
-        <span className="text-muted-foreground text-xs font-normal">点击展开 / 收起</span>
+        {t("字段排版 · 12 格")}{" "}
+        <span className="text-muted-foreground text-xs font-normal">{t("点击展开 / 收起")}</span>
       </summary>
       <div>
         <p className="text-muted-foreground mt-0.5 text-xs">
-          拖动字段换位，使用 − / + 调宽；纸张同步显示虚线和 12
-          格辅助线。空内容和隐藏字段不占空间，点击「完成布局」可收起辅助线。
+          {t(
+            "拖动字段换位，使用 − / + 调宽；纸张同步显示虚线和 12 格辅助线。空内容和隐藏字段不占空间，点击「完成布局」可收起辅助线。",
+          )}
         </p>
       </div>
 
@@ -131,11 +134,11 @@ export function ItemLayoutEditor({
           <button
             key={preset.value}
             type="button"
-            aria-label={`套用${preset.label}预设`}
+            aria-label={t("套用{0}预设", preset.label)}
             onClick={() => applyPreset(preset.value)}
             className="hover:bg-accent bg-background rounded-md border px-2 py-1.5 text-xs transition-colors"
           >
-            {preset.label}
+            {t(preset.label)}
           </button>
         ))}
       </div>
@@ -149,10 +152,10 @@ export function ItemLayoutEditor({
         onDragCancel={() => setActiveField(null)}
         accessibility={{
           announcements: {
-            onDragStart: () => "开始移动字段",
-            onDragOver: ({ over }) => (over ? "已找到字段位置" : "未找到字段位置"),
-            onDragEnd: ({ over }) => (over ? "字段已移动" : "已取消移动"),
-            onDragCancel: () => "已取消移动",
+            onDragStart: () => t("开始移动字段"),
+            onDragOver: ({ over }) => (over ? t("已找到字段位置") : t("未找到字段位置")),
+            onDragEnd: ({ over }) => (over ? t("字段已移动") : t("已取消移动")),
+            onDragCancel: () => t("已取消移动"),
           },
         }}
       >
@@ -176,17 +179,19 @@ export function ItemLayoutEditor({
         <DragOverlay dropAnimation={null}>
           {activeField ? (
             <div className="bg-popover rounded-md border px-3 py-2 text-xs shadow-lg">
-              {fieldDefinition(sectionType, activeField as ItemLayoutAtom["field"])?.label ??
-                "移动字段"}
+              {t(
+                fieldDefinition(sectionType, activeField as ItemLayoutAtom["field"])?.label ??
+                  "移动字段",
+              )}
             </div>
           ) : null}
         </DragOverlay>
       </DndContext>
 
       <div className="text-muted-foreground flex flex-wrap gap-x-3 gap-y-1 text-[11px]">
-        <span>↵ = 强制换行</span>
-        <span>数字 = 占用格数</span>
-        <span>眼睛 = 仅隐藏呈现</span>
+        <span>{t("↵ = 强制换行")}</span>
+        <span>{t("数字 = 占用格数")}</span>
+        <span>{t("眼睛 = 仅隐藏呈现")}</span>
       </div>
     </details>
   );
@@ -203,6 +208,7 @@ function SortableAtom({
   atom: ItemLayoutAtom;
   onChange: (atom: ItemLayoutAtom) => void;
 }) {
+  useLanguage();
   const definition = fieldDefinition(sectionType, atom.field);
   const minSpan = definition?.minSpan ?? 2;
   const compactControls = atom.span <= 2 ? "size-3 p-0" : undefined;
@@ -245,8 +251,8 @@ function SortableAtom({
         <div className="flex min-w-0 flex-1 basis-12 items-center gap-0.5">
           <button
             type="button"
-            aria-label={`拖动${definition?.label ?? atom.field}`}
-            title="拖动换位；键盘可用空格键拾取"
+            aria-label={t("拖动{0}", definition?.label ?? atom.field)}
+            title={t("拖动换位；键盘可用空格键拾取")}
             className="text-muted-foreground hover:text-foreground shrink-0 cursor-grab touch-none rounded p-0.5 active:cursor-grabbing"
             {...attributes}
             {...listeners}
@@ -254,28 +260,28 @@ function SortableAtom({
             <GripVertical className="size-3" />
           </button>
           <span className="min-w-0 flex-1 truncate text-[11px] font-medium">
-            {definition?.label ?? atom.field}
+            {t(definition?.label) ?? atom.field}
           </span>
         </div>
         <div
           role="group"
-          aria-label={`${definition?.label ?? atom.field}占用格数`}
+          aria-label={t("{0}占用格数", definition?.label ?? atom.field)}
           className="item-layout-width text-muted-foreground ml-auto flex shrink-0 items-center"
         >
           <AtomButton
             className={compactControls}
-            label={`减少${definition?.label ?? atom.field}宽度`}
+            label={t("减少{0}宽度", definition?.label ?? atom.field)}
             disabled={atom.span <= minSpan}
             onClick={() => onChange({ ...atom, span: Math.max(minSpan, atom.span - 1) })}
           >
             <Minus className="size-3" />
           </AtomButton>
-          <span className="w-3 text-center text-[10px] tabular-nums" title="占用格数">
+          <span className="w-3 text-center text-[10px] tabular-nums" title={t("占用格数")}>
             {atom.span}
           </span>
           <AtomButton
             className={compactControls}
-            label={`增加${definition?.label ?? atom.field}宽度`}
+            label={t("增加{0}宽度", definition?.label ?? atom.field)}
             disabled={atom.span >= 12}
             onClick={() => onChange({ ...atom, span: Math.min(12, atom.span + 1) })}
           >
@@ -287,7 +293,11 @@ function SortableAtom({
       <div className="item-layout-actions mt-1 flex items-center justify-between">
         <AtomButton
           className={compactControls}
-          label={`${atom.breakBefore ? "取消" : "设置"}${definition?.label ?? atom.field}强制换行`}
+          label={t(
+            "{0}{1}强制换行",
+            atom.breakBefore ? "取消" : "设置",
+            definition?.label ?? atom.field,
+          )}
           pressed={atom.breakBefore}
           onClick={() => onChange({ ...atom, breakBefore: !atom.breakBefore })}
         >
@@ -295,14 +305,14 @@ function SortableAtom({
         </AtomButton>
         <AtomButton
           className={compactControls}
-          label={`切换${definition?.label ?? atom.field}对齐方式，当前${atom.align}`}
+          label={t("切换{0}对齐方式，当前{1}", definition?.label ?? atom.field, atom.align)}
           onClick={() => onChange({ ...atom, align: nextAlign[atom.align] })}
         >
           <AlignIcon className="size-3" />
         </AtomButton>
         <AtomButton
           className={compactControls}
-          label={`${atom.visible ? "隐藏" : "显示"}${definition?.label ?? atom.field}`}
+          label={t("{0}{1}", atom.visible ? "隐藏" : "显示", definition?.label ?? atom.field)}
           pressed={!atom.visible}
           onClick={() => onChange({ ...atom, visible: !atom.visible })}
         >
@@ -328,6 +338,7 @@ function AtomButton({
   children: React.ReactNode;
   className?: string;
 }) {
+  useLanguage();
   return (
     <button
       type="button"

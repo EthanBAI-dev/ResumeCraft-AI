@@ -4,6 +4,8 @@ import { get, update } from "idb-keyval";
 import { createEmptyResume, newId, type ResumeData } from "@/lib/schema";
 import { parseDraft } from "@/lib/schema/draft";
 import { sampleResume } from "@/fixtures/sample-resume";
+import { englishSampleResume } from "@/fixtures/english-sample-resume";
+import { getLanguage, t } from "@/lib/i18n";
 import { DEMO_PHOTO } from "@/fixtures/demo-photo";
 import { LOCAL_DRAFT_KEY } from "@/lib/constants";
 import { useResumeStore } from "./resume-store";
@@ -37,7 +39,7 @@ let changing = false;
 let frozen = false;
 
 export function demoResume(): ResumeData {
-  const data = structuredClone(sampleResume);
+  const data = structuredClone(getLanguage() === "en-US" ? englishSampleResume : sampleResume);
   data.basics.photo = { ...data.basics.photo, url: DEMO_PHOTO, visible: true };
   return data;
 }
@@ -88,7 +90,7 @@ export function initializeLibrary() {
           entries: [
             {
               id,
-              title: legacy ? "我的简历" : "示例简历",
+              title: t(legacy ? "我的简历" : "示例简历"),
               data,
               updatedAt: legacy?.savedAt || Date.now(),
             },
@@ -191,15 +193,16 @@ async function mutate(recipe: (state: State) => Pick<State, "entries" | "activeI
   useLibraryStore.setState({ ...next, status: "saving" });
   await flushLibrary();
   changing = true;
-  useResumeStore
-    .getState()
-    .replaceResume(next.entries.find((e) => e.id === next.activeId)!.data, {
-      recordHistory: false,
-    });
+  useResumeStore.getState().replaceResume(next.entries.find((e) => e.id === next.activeId)!.data, {
+    recordHistory: false,
+  });
   useLibraryStore.setState((s) => ({ epoch: s.epoch + 1, sampleNotice: false }));
   changing = false;
 }
-export async function createLocalResume(title = "未命名简历", data = createEmptyResume()) {
+export async function createLocalResume(
+  title = t("未命名简历"),
+  data = createEmptyResume(getLanguage()),
+) {
   const id = newId();
   await mutate((s) => ({
     entries: [...s.entries, { id, title, data: structuredClone(data), updatedAt: Date.now() }],
@@ -214,7 +217,7 @@ export async function renameLocalResume(id: string, title: string) {
   await flushLibrary();
   useLibraryStore.setState((s) => ({
     entries: s.entries.map((e) =>
-      e.id === id ? { ...e, title: title.trim().slice(0, 80) || "未命名简历" } : e,
+      e.id === id ? { ...e, title: title.trim().slice(0, 80) || t("未命名简历") } : e,
     ),
     status: "saving",
   }));
@@ -226,9 +229,9 @@ export async function deleteLocalResume(id: string) {
     if (!entries.length)
       entries.push({
         id: newId(),
-        title: "未命名简历",
+        title: t("未命名简历"),
         updatedAt: Date.now(),
-        data: createEmptyResume(),
+        data: createEmptyResume(getLanguage()),
       });
     return { entries, activeId: s.activeId === id ? entries[0].id : s.activeId };
   });

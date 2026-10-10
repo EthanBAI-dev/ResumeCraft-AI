@@ -1,4 +1,5 @@
 "use client";
+import { t, useLanguage } from "@/lib/i18n";
 
 import { ChevronDown, ChevronUp, Copy, Eye, EyeOff, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,6 +12,7 @@ import { AiPolish } from "./ai-polish";
 import { ItemLayoutEditor } from "./item-layout-editor";
 
 export function SectionEditor({ sectionId }: { sectionId: string }) {
+  useLanguage();
   const section = useSection(sectionId);
   const updateSection = useResumeStore((s) => s.updateSection);
   const addItem = useResumeStore((s) => s.addItem);
@@ -20,7 +22,7 @@ export function SectionEditor({ sectionId }: { sectionId: string }) {
   return (
     <div className="space-y-4">
       <TextField
-        label="区块标题"
+        label={t("区块标题")}
         id={`section-name-${sectionId}`}
         value={section.name}
         onCommit={(v) =>
@@ -32,11 +34,11 @@ export function SectionEditor({ sectionId }: { sectionId: string }) {
 
       {section.type === "summary" ? (
         <TextAreaField
-          label="内容"
+          label={t("内容")}
           id={`summary-${sectionId}`}
           rows={5}
           value={section.content}
-          placeholder="3 年后端开发经验，专注高并发交易系统……"
+          placeholder={t("3 年后端开发经验，专注高并发交易系统……")}
           onCommit={(v) =>
             updateSection(sectionId, (draft) => {
               if (draft.type === "summary") draft.content = v;
@@ -62,7 +64,7 @@ export function SectionEditor({ sectionId }: { sectionId: string }) {
 
           <Button variant="outline" size="sm" className="w-full" onClick={() => addItem(sectionId)}>
             <Plus className="size-4" />
-            添加一条
+            {t("添加一条")}
           </Button>
         </>
       )}
@@ -81,6 +83,7 @@ function ItemCard({
   index: number;
   total: number;
 }) {
+  useLanguage();
   const updateItem = useResumeStore((s) => s.updateItem);
   const removeItem = useResumeStore((s) => s.removeItem);
   const moveItem = useResumeStore((s) => s.moveItem);
@@ -91,7 +94,7 @@ function ItemCard({
     ITEM_TITLE_KEYS[section.type]
       .map((key) => record[key])
       .filter((v): v is string => typeof v === "string" && v.trim() !== "")
-      .join(" · ") || `未命名条目 ${index + 1}`;
+      .join(" · ") || t("未命名条目 {0}", index + 1);
 
   const set = (key: string, value: unknown) =>
     updateItem(section.id, item.id, (draft) => {
@@ -105,7 +108,7 @@ function ItemCard({
         <Button
           variant="ghost"
           size="icon"
-          aria-label={item.visible ? "隐藏该条目" : "显示该条目"}
+          aria-label={item.visible ? t("隐藏该条目") : t("显示该条目")}
           onClick={() => set("visible", !item.visible)}
         >
           {item.visible ? <Eye className="size-4" /> : <EyeOff className="size-4" />}
@@ -113,7 +116,7 @@ function ItemCard({
         <Button
           variant="ghost"
           size="icon"
-          aria-label="上移"
+          aria-label={t("上移")}
           disabled={index === 0}
           onClick={() => moveItem(section.id, index, index - 1)}
         >
@@ -122,7 +125,7 @@ function ItemCard({
         <Button
           variant="ghost"
           size="icon"
-          aria-label="下移"
+          aria-label={t("下移")}
           disabled={index === total - 1}
           onClick={() => moveItem(section.id, index, index + 1)}
         >
@@ -131,7 +134,7 @@ function ItemCard({
         <Button
           variant="ghost"
           size="icon"
-          aria-label="复制该条目"
+          aria-label={t("复制该条目")}
           onClick={() => duplicateItem(section.id, item.id)}
         >
           <Copy className="size-4" />
@@ -139,7 +142,7 @@ function ItemCard({
         <Button
           variant="ghost"
           size="icon"
-          aria-label="删除该条目"
+          aria-label={t("删除该条目")}
           onClick={() => removeItem(section.id, item.id)}
         >
           <Trash2 className="size-4" />
@@ -185,12 +188,13 @@ function ItemField({
   value: unknown;
   onCommit: (value: unknown) => void;
 }) {
+  useLanguage();
   if (field.kind === "tags") {
     return (
       <TagsField
-        label={field.label}
+        label={t(field.label)}
         value={Array.isArray(value) ? (value as string[]) : []}
-        placeholder={field.placeholder}
+        placeholder={t(field.placeholder)}
         onCommit={onCommit}
       />
     );
@@ -199,9 +203,9 @@ function ItemField({
   if (field.kind === "textarea") {
     return (
       <TextAreaField
-        label={field.label}
+        label={t(field.label)}
         value={typeof value === "string" ? value : ""}
-        placeholder={field.placeholder}
+        placeholder={t(field.placeholder)}
         onCommit={onCommit}
         rows={2}
       />
@@ -210,16 +214,16 @@ function ItemField({
 
   const hint =
     field.kind === "date"
-      ? "格式 2024 或 2024-06"
+      ? t("格式 2024 或 2024-06")
       : field.kind === "endDate"
-        ? "留空表示至今"
+        ? t("留空表示至今")
         : undefined;
 
   return (
     <TextField
-      label={field.label}
+      label={t(field.label)}
       value={typeof value === "string" ? value : ""}
-      placeholder={field.placeholder}
+      placeholder={t(field.placeholder)}
       hint={hint}
       onCommit={(v) => onCommit(field.kind === "endDate" && v === "" ? "present" : v)}
     />
@@ -238,13 +242,16 @@ function HighlightsField({
   values: string[];
   onCommit: (values: string[]) => void;
 }) {
+  useLanguage();
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <span className="text-muted-foreground text-xs font-medium">经历描述（每条一个要点）</span>
+        <span className="text-muted-foreground text-xs font-medium">
+          {t("经历描述（每条一个要点）")}
+        </span>
         <Button variant="ghost" size="sm" onClick={() => onCommit([...values, ""])}>
           <Plus className="size-3.5" />
-          添加要点
+          {t("添加要点")}
         </Button>
       </div>
 
@@ -252,16 +259,18 @@ function HighlightsField({
         <div key={index} className="flex items-start gap-2">
           <span className="text-muted-foreground mt-2.5 text-xs tabular-nums">{index + 1}.</span>
           <DebouncedTextarea
-            aria-label={`第 ${index + 1} 条要点`}
+            aria-label={t("第 {0} 条要点", index + 1)}
             className="min-h-0 flex-1"
             value={value}
-            placeholder="用「动词 + 做了什么 + 量化结果」的结构写，例如：主导支付链路重构，将对账差异率从 0.3% 降至 0.002%"
+            placeholder={t(
+              "用「动词 + 做了什么 + 量化结果」的结构写，例如：主导支付链路重构，将对账差异率从 0.3% 降至 0.002%",
+            )}
             onCommit={(next) => onCommit(values.map((v, i) => (i === index ? next : v)))}
           />
           <Button
             variant="ghost"
             size="icon"
-            aria-label={`删除第 ${index + 1} 条要点`}
+            aria-label={t("删除第 {0} 条要点", index + 1)}
             onClick={() => onCommit(values.filter((_, i) => i !== index))}
           >
             <Trash2 className="size-4" />

@@ -1,4 +1,5 @@
 "use client";
+import { t, useLanguage } from "@/lib/i18n";
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { ArrowLeft, ArrowRight, BookOpen, Check, Compass, X } from "lucide-react";
@@ -71,6 +72,7 @@ type Geometry = {
 /** Native modal semantics handle focus trapping and background inertness. The SVG
  * cutout highlights the real control without moving/reparenting application DOM. */
 export function EditorGuide({ ready }: { ready: boolean }) {
+  useLanguage();
   const step = useEditorStore((state) => state.guideStep);
   const helpOpen = useEditorStore((state) => state.helpOpen);
   const active = step !== null || helpOpen;
@@ -301,21 +303,22 @@ export function EditorGuide({ ready }: { ready: boolean }) {
             <div className="flex items-center justify-between">
               <span className="text-primary flex items-center gap-2 text-xs font-semibold">
                 <Compass className="size-4" />
-                新手引导 · {step + 1} / {GUIDE_STEPS.length}
+                {t("新手引导 ·")}
+                {step + 1} / {GUIDE_STEPS.length}
               </span>
               <button
-                aria-label="关闭新手引导"
+                aria-label={t("关闭新手引导")}
                 className="hover:bg-muted rounded p-1"
                 onClick={close}
               >
                 <X className="size-4" />
               </button>
             </div>
-            <div className="my-4 flex gap-1.5" aria-label="引导步骤">
+            <div className="my-4 flex gap-1.5" aria-label={t("引导步骤")}>
               {GUIDE_STEPS.map((item, index) => (
                 <button
                   key={item.title}
-                  aria-label={`第 ${index + 1} 步：${item.title}`}
+                  aria-label={t("第 {0} 步：{1}", index + 1, item.title)}
                   aria-current={step === index ? "step" : undefined}
                   className={`grid size-7 place-items-center rounded-full text-xs font-semibold ${index === step ? "bg-primary text-white" : "text-primary bg-[#edf3ef]"}`}
                   onClick={() => useEditorStore.getState().setGuideStep(index)}
@@ -326,18 +329,18 @@ export function EditorGuide({ ready }: { ready: boolean }) {
             </div>
             <div aria-live="polite">
               <h2 id="guide-title" className="text-lg font-semibold tracking-tight">
-                {current.title}
+                {t(current.title)}
               </h2>
               <p id="guide-description" className="mt-3 text-sm leading-relaxed text-slate-600">
-                {current.body}
+                {t(current.body)}
               </p>
               <p className="mt-3 rounded-lg bg-[#eff5f1] p-3 text-xs leading-relaxed text-[#43645a]">
-                {current.detail}
+                {t(current.detail)}
               </p>
             </div>
             <div className="mt-5 flex items-center justify-between gap-2">
               <button className="text-muted-foreground text-xs hover:underline" onClick={close}>
-                跳过引导
+                {t("跳过引导")}
               </button>
               <div className="flex gap-2">
                 <Button
@@ -347,7 +350,7 @@ export function EditorGuide({ ready }: { ready: boolean }) {
                   onClick={() => useEditorStore.getState().setGuideStep(step - 1)}
                 >
                   <ArrowLeft className="size-3.5" />
-                  上一步
+                  {t("上一步")}
                 </Button>
                 <Button
                   className="guide-next"
@@ -358,7 +361,7 @@ export function EditorGuide({ ready }: { ready: boolean }) {
                       : useEditorStore.getState().setGuideStep(step + 1)
                   }
                 >
-                  {step === GUIDE_STEPS.length - 1 ? "开始使用" : "下一步"}
+                  {step === GUIDE_STEPS.length - 1 ? t("开始使用") : t("下一步")}
                   <ArrowRight className="size-3.5" />
                 </Button>
               </div>
@@ -375,83 +378,91 @@ export function EditorGuide({ ready }: { ready: boolean }) {
                 RESUMECRAFT GUIDE
               </p>
               <h2 id="help-title" className="mt-2 text-2xl font-semibold">
-                用好你的简历工作台
+                {t("用好你的简历工作台")}
               </h2>
               <p className="text-muted-foreground mt-2 text-sm">
-                按模块查阅，或者跟着高亮提示走一遍。
+                {t("按模块查阅，或者跟着高亮提示走一遍。")}
               </p>
             </div>
-            <button aria-label="关闭帮助" className="hover:bg-muted rounded p-1" onClick={close}>
+            <button
+              aria-label={t("关闭帮助")}
+              className="hover:bg-muted rounded p-1"
+              onClick={close}
+            >
               <X className="size-5" />
             </button>
           </header>
           <div className="space-y-5 p-6">
             <Button onClick={() => useEditorStore.getState().startGuide()}>
               <Compass className="size-4" />
-              重新开始新手引导
+              {t("重新开始新手引导")}
             </Button>
             <div className="grid gap-3 sm:grid-cols-2">
               {GUIDE_STEPS.slice(0, -1).map((item, index) => (
                 <section key={item.title} className="rounded-xl border bg-[#f8faf8] p-4">
                   <span className="text-primary text-xs font-semibold">0{index + 1}</span>
-                  <h3 className="mt-2 text-sm font-semibold">{item.title}</h3>
-                  <p className="text-muted-foreground mt-2 text-xs leading-relaxed">{item.body}</p>
+                  <h3 className="mt-2 text-sm font-semibold">{t(item.title)}</h3>
+                  <p className="text-muted-foreground mt-2 text-xs leading-relaxed">
+                    {t(item.body)}
+                  </p>
                   <button
                     className="text-primary mt-3 text-xs font-medium underline underline-offset-4"
                     onClick={() => useEditorStore.getState().startGuide(index)}
                   >
-                    带我看看<span className="sr-only">：{item.title}</span>
+                    {t("带我看看")}
+                    <span className="sr-only">: {t(item.title)}</span>
                   </button>
                 </section>
               ))}
             </div>
             <div className="text-muted-foreground rounded-xl border p-4 text-xs leading-relaxed">
-              <p className="text-foreground font-semibold">本地多简历与示例</p>
+              <p className="text-foreground font-semibold">{t("本地多简历与示例")}</p>
               <p className="mt-1">
-                顶部「我的简历」可新建、重命名、复制、切换和删除。每份简历独立自动保存，切换后撤销历史重新开始。旧草稿会自动迁移；清理浏览器数据会丢失本地简历，请逐份导出
-                JSON。导入 JSON 会新建一份，不覆盖正在编辑的简历。
+                {t(
+                  "顶部「我的简历」可新建、重命名、复制、切换和删除。每份简历独立自动保存，切换后撤销历史重新开始。旧草稿会自动迁移；清理浏览器数据会丢失本地简历，请逐份导出 JSON。导入 JSON 会新建一份，不覆盖正在编辑的简历。",
+                )}
               </p>
               <p className="mt-2">
-                再次「载入示例」会先确认，可取消、替换当前简历（可撤销），或新建一份示例。基本信息内的「上传照片」支持
-                JPG/PNG/WebP，最大 5 MB，图片在本机压缩保存；可一键选择男生或女生 AI
-                示例头像，首次载入示例默认男生。照片统一为 4:5
-                竖版直角矩形，实际效果直接在简历纸张中查看，可调整宽度。示例照片请在投递前替换或隐藏，不支持图片识别成简历。
+                {t(
+                  "再次「载入示例」会先确认，可取消、替换当前简历（可撤销），或新建一份示例。基本信息内的「上传照片」支持 JPG/PNG/WebP，最大 5 MB，图片在本机压缩保存；可一键选择男生或女生 AI 示例头像，首次载入示例默认男生。照片统一为 4:5 竖版直角矩形，实际效果直接在简历纸张中查看，可调整宽度。示例照片请在投递前替换或隐藏，不支持图片识别成简历。",
+                )}
               </p>
               <p className="text-foreground mt-4 font-semibold">
-                已有 PDF / Word 简历？使用导入 Skill
+                {t("已有 PDF / Word 简历？使用导入 Skill")}
               </p>
               <p className="mt-1">
-                开源仓库提供 resumecraft-import Skill。将文件交给支持 Skill 的 AI
-                助手，核对提取结果后生成 ResumeCraft JSON，再从「文件 → 导入」新建简历。
-                网站本身不直接识别 PDF、Word 或图片；扫描件需助手具备 OCR / 视觉能力。不要把 Key
-                或真实简历放进公开 Issue。
+                {t(
+                  "开源仓库提供 resumecraft-import Skill。将文件交给支持 Skill 的 AI 助手，核对提取结果后生成 ResumeCraft JSON，再从「文件 → 导入」新建简历。 网站本身不直接识别 PDF、Word 或图片；扫描件需助手具备 OCR / 视觉能力。不要把 Key 或真实简历放进公开 Issue。",
+                )}
               </p>
-              <p className="text-foreground mt-4 font-semibold">投递前检查，不是招聘评分</p>
+              <p className="text-foreground mt-4 font-semibold">{t("投递前检查，不是招聘评分")}</p>
               <p className="mt-1">
-                只核对空字段、联系方式、示例资料、时间顺序和较长描述等可解释规则。可手动输入岗位关键词做文本核对，不打总分、不保证
-                ATS 通过率、不预测录用。数据只在浏览器内处理。
+                {t(
+                  "只核对空字段、联系方式、示例资料、时间顺序和较长描述等可解释规则。可手动输入岗位关键词做文本核对，不打总分、不保证 ATS 通过率、不预测录用。数据只在浏览器内处理。",
+                )}
               </p>
-              <p className="text-foreground font-semibold">两种布局，不是同一个开关</p>
+              <p className="text-foreground font-semibold">{t("两种布局，不是同一个开关")}</p>
               <p className="mt-1">
-                纸张上的「调整布局」移动整个区块；左侧每个区块的「字段排版 · 12
-                格」调整内部字段。十二格设置对同一区块的所有条目生效。行高自动适应内容，文字行距在「模板与样式
-                → 行高」中设置。
+                {t(
+                  "纸张上的「调整布局」移动整个区块；左侧每个区块的「字段排版 · 12 格」调整内部字段。十二格设置对同一区块的所有条目生效。行高自动适应内容，文字行距在「模板与样式 → 行高」中设置。",
+                )}
               </p>
               <p className="mt-2">
-                Ctrl / ⌘ + Z 撤销；加 Shift 重做。AI 可使用自带密钥；高保真导出需要 PDF
-                Worker，未配置时 PDF 使用系统打印、PNG 暂不可用。浏览器本地草稿请定期导出备份。
+                {t(
+                  "Ctrl / ⌘ + Z 撤销；加 Shift 重做。AI 可使用自带密钥；高保真导出需要 PDF Worker，未配置时 PDF 使用系统打印、PNG 暂不可用。浏览器本地草稿请定期导出备份。",
+                )}
               </p>
               <p className="mt-4">
-                喜欢这个免费工具？
+                {t("喜欢这个免费工具？")}
                 <a
                   className="text-primary underline"
                   href="https://github.com/EthanBAI-dev"
                   target="_blank"
                   rel="noreferrer noopener"
                 >
-                  在 GitHub 关注作者
+                  {t("在 GitHub 关注作者")}
                 </a>
-                ，或给项目一个 Star。完全自愿，不影响任何编辑和导出功能。
+                {t("，或给项目一个 Star。完全自愿，不影响任何编辑和导出功能。")}
               </p>
             </div>
           </div>

@@ -1,4 +1,5 @@
 "use client";
+import { t, useLanguage } from "@/lib/i18n";
 import { useEffect, useRef } from "react";
 import { X } from "lucide-react";
 export function LocalDialog({
@@ -10,6 +11,7 @@ export function LocalDialog({
   onClose: () => void;
   children: React.ReactNode;
 }) {
+  useLanguage();
   const ref = useRef<HTMLDialogElement>(null);
   useEffect(() => {
     const previous = document.activeElement as HTMLElement | null;
@@ -32,7 +34,7 @@ export function LocalDialog({
     >
       <header className="flex items-center justify-between border-b p-5">
         <h2 className="text-lg font-semibold">{title}</h2>
-        <button aria-label={`关闭${title}`} onClick={onClose} className="rounded p-1">
+        <button aria-label={t("关闭{0}", title)} onClick={onClose} className="rounded p-1">
           <X className="size-5" />
         </button>
       </header>

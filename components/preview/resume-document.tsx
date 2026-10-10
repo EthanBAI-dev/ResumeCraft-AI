@@ -1,6 +1,6 @@
 import { Fragment, type CSSProperties, type ReactNode } from "react";
 import { PAGE_SIZES } from "@/lib/constants";
-import type { ResumeData } from "@/lib/schema";
+import { type ResumeData } from "@/lib/schema";
 import { getTemplate } from "@/components/templates/registry";
 import { BasicsBlock, SectionBlock } from "./blocks";
 
@@ -85,7 +85,11 @@ export function ResumeDocument({ resume, renderBlock, renderColumn }: ResumeDocu
               const content = ids.map((id, index) => {
                 const block =
                   id === "basics" ? (
-                    <BasicsBlock basics={basics} layout={metadata.itemLayouts?.basics} />
+                    <BasicsBlock
+                      basics={basics}
+                      layout={metadata.itemLayouts?.basics}
+                      locale={metadata.locale}
+                    />
                   ) : sections[id] ? (
                     <SectionBlock
                       section={sections[id]}

@@ -1,4 +1,5 @@
 "use client";
+import { t, useLanguage } from "@/lib/i18n";
 
 import { FilePenLine, ScanEye } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -11,6 +12,7 @@ import { EditorGuide } from "@/components/editor/editor-guide";
 import { useLibraryStore } from "@/lib/store/library";
 
 export function BuilderShell() {
+  useLanguage();
   const { status, savedAt } = useDraftPersistence();
   const epoch = useLibraryStore((s) => s.epoch);
   const storageError = useLibraryStore((s) => s.error);
@@ -22,12 +24,12 @@ export function BuilderShell() {
       <Toolbar status={status} savedAt={savedAt} />
       {storageError && (
         <div role="alert" className="border-b bg-red-50 p-3 text-sm text-red-800">
-          {storageError} 当前内容仍可通过「文件 → JSON」备份。
+          {t(storageError)} {t("当前内容仍可通过「文件 → JSON」备份。")}
         </div>
       )}
       <div
         className="mobile-switch flex gap-2 border-b bg-white p-2 lg:hidden"
-        aria-label="编辑器视图"
+        aria-label={t("编辑器视图")}
       >
         <button
           className={cn(
@@ -38,7 +40,7 @@ export function BuilderShell() {
           onClick={() => setView("edit")}
         >
           <FilePenLine className="size-4" />
-          编辑内容
+          {t("编辑内容")}
         </button>
         <button
           className={cn(
@@ -49,7 +51,7 @@ export function BuilderShell() {
           onClick={() => setView("preview")}
         >
           <ScanEye className="size-4" />
-          纸张预览
+          {t("纸张预览")}
         </button>
       </div>
       <div className="workspace-body grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-[380px_minmax(0,1fr)] xl:grid-cols-[410px_minmax(0,1fr)]">
@@ -57,7 +59,7 @@ export function BuilderShell() {
           className={cn("editor-sidebar min-h-0 border-r lg:block", view !== "edit" && "hidden")}
         >
           {status === "loading" ? (
-            <p className="p-5">正在读取本地简历…</p>
+            <p className="p-5">{t("正在读取本地简历…")}</p>
           ) : (
             <EditorPanel key={epoch} />
           )}

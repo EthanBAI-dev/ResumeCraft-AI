@@ -15,16 +15,16 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "ResumeCraft · AI 驱动的可视化简历设计平台",
+    default: "ResumeCraft · Free, local-first resume builder",
     template: "%s",
   },
   description:
-    "结构化拖拽编辑、A4 实时预览、AI 内容改写与 ATS 可解释评分，导出前用文本回读校验保证机器读得懂。",
+    "Build your next resume with six templates, visual layout controls, local autosave and optional AI writing with your own API key. Free and open source. English and Chinese supported.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="zh-CN" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
+    <html lang="en-US" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">
         {children}
         <Toaster richColors position="bottom-center" />

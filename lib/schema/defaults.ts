@@ -79,13 +79,15 @@ export function createSection(type: SectionType, name?: string): Section {
 }
 
 /** 空白简历：有骨架但没内容，用于"从零开始"入口 */
-export function createEmptyResume(): ResumeData {
+export function createEmptyResume(locale: "zh-CN" | "en-US" = "zh-CN"): ResumeData {
+  const names =
+    locale === "en-US" ? ["Summary", "Experience", "Projects", "Education", "Skills"] : [];
   const sections = [
-    createSection("summary"),
-    createSection("experience"),
-    createSection("project"),
-    createSection("education"),
-    createSection("skill"),
+    createSection("summary", names[0]),
+    createSection("experience", names[1]),
+    createSection("project", names[2]),
+    createSection("education", names[3]),
+    createSection("skill", names[4]),
   ];
 
   const layout: Layout = [
@@ -110,16 +112,17 @@ export function createEmptyResume(): ResumeData {
     layout,
     metadata: {
       template: "modern",
+      itemLayouts: {},
       page: { format: "a4", margin: 16, showPageNumbers: false, columnRatio: 0.66 },
       theme: { primary: "#2563eb", text: "#18181b", muted: "#71717a", background: "#ffffff" },
       typography: {
-        fontFamily: "Noto Sans SC",
+        fontFamily: locale === "en-US" ? "Inter" : "Noto Sans SC",
         fontSize: 10.5,
         lineHeight: 1.5,
         sectionGap: 12,
         itemGap: 8,
       },
-      locale: "zh-CN",
+      locale,
       css: { visible: false, value: "" },
     },
   });

@@ -1,4 +1,5 @@
 "use client";
+import { t, useLanguage } from "@/lib/i18n";
 
 import { useEffect, useId, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
@@ -71,6 +72,7 @@ type FieldProps = {
 };
 
 export function TextField({ label, value, onCommit, placeholder, hint, id }: FieldProps) {
+  useLanguage();
   const field = useDebouncedValue(value, onCommit);
   // 用 useId 而不是 `f-${label}`：同一页上完全可能有两个「区块标题」，
   // 靠文本拼 id 会产生重复 id，label 会关联到错误的输入框。
@@ -79,17 +81,17 @@ export function TextField({ label, value, onCommit, placeholder, hint, id }: Fie
   return (
     <div className="space-y-1.5">
       <label htmlFor={inputId} className="text-muted-foreground text-xs font-medium">
-        {label}
+        {t(label)}
       </label>
       <Input
         id={inputId}
         value={field.value}
-        placeholder={placeholder}
+        placeholder={t(placeholder)}
         onChange={(e) => field.onChange(e.target.value)}
         onFocus={field.onFocus}
         onBlur={field.onBlur}
       />
-      {hint ? <p className="text-muted-foreground text-xs">{hint}</p> : null}
+      {hint ? <p className="text-muted-foreground text-xs">{t(hint)}</p> : null}
     </div>
   );
 }
@@ -102,19 +104,20 @@ export function TextAreaField({
   rows = 3,
   id,
 }: FieldProps & { rows?: number }) {
+  useLanguage();
   const field = useDebouncedValue(value, onCommit);
   const autoId = useId();
   const inputId = id ?? autoId;
   return (
     <div className="space-y-1.5">
       <label htmlFor={inputId} className="text-muted-foreground text-xs font-medium">
-        {label}
+        {t(label)}
       </label>
       <Textarea
         id={inputId}
         rows={rows}
         value={field.value}
-        placeholder={placeholder}
+        placeholder={t(placeholder)}
         onChange={(e) => field.onChange(e.target.value)}
         onFocus={field.onFocus}
         onBlur={field.onBlur}
@@ -139,6 +142,7 @@ export function DebouncedTextarea({
   className?: string;
   "aria-label"?: string;
 }) {
+  useLanguage();
   const field = useDebouncedValue(value, onCommit);
   return (
     <Textarea
@@ -146,7 +150,7 @@ export function DebouncedTextarea({
       className={className}
       aria-label={ariaLabel}
       value={field.value}
-      placeholder={placeholder}
+      placeholder={t(placeholder)}
       onChange={(e) => field.onChange(e.target.value)}
       onFocus={field.onFocus}
       onBlur={field.onBlur}
@@ -166,6 +170,7 @@ export function TagsField({
   onCommit: (value: string[]) => void;
   placeholder?: string;
 }) {
+  useLanguage();
   const field = useDebouncedValue(value.join("、"), (next) =>
     onCommit(
       next
@@ -177,10 +182,10 @@ export function TagsField({
 
   return (
     <div className="space-y-1.5">
-      <label className="text-muted-foreground text-xs font-medium">{label}</label>
+      <label className="text-muted-foreground text-xs font-medium">{t(label)}</label>
       <Input
         value={field.value}
-        placeholder={placeholder ?? "用顿号或逗号分隔"}
+        placeholder={placeholder ?? t("用顿号或逗号分隔")}
         onChange={(e) => field.onChange(e.target.value)}
         onFocus={field.onFocus}
         onBlur={field.onBlur}

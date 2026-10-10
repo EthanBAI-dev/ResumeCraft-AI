@@ -1,4 +1,5 @@
 "use client";
+import { t, useLanguage } from "@/lib/i18n";
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
@@ -25,6 +26,7 @@ import { LayoutEditor } from "./layout-editor";
  * 而是明确地把溢出量告诉用户——这比悄悄裁掉半页内容诚实得多。
  */
 export function PreviewCanvas() {
+  useLanguage();
   const resume = useResume((s) => s.resume);
   const zoom = useEditorStore((s) => s.zoom);
   const setZoom = useEditorStore((s) => s.setZoom);
@@ -189,13 +191,13 @@ export function PreviewCanvas() {
             onClick={() => setLayoutMode(!layoutMode)}
           >
             <GripVertical className="size-3.5" />
-            {layoutMode ? "完成布局" : "调整布局"}
+            {layoutMode ? t("完成布局") : t("调整布局")}
           </Button>
           <span className="bg-border mx-1 h-4 w-px" aria-hidden="true" />
           <Button
             variant="ghost"
             size="icon"
-            aria-label="缩小"
+            aria-label={t("缩小")}
             onClick={() => zoomBy(-0.1)}
             disabled={scale <= ZOOM_MIN}
           >
@@ -207,21 +209,26 @@ export function PreviewCanvas() {
           <Button
             variant="ghost"
             size="icon"
-            aria-label="放大"
+            aria-label={t("放大")}
             onClick={() => zoomBy(0.1)}
             disabled={scale >= ZOOM_MAX}
           >
             <Plus className="size-4" />
           </Button>
-          <Button variant="ghost" size="icon" aria-label="适应宽度" onClick={() => setZoom(null)}>
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label={t("适应宽度")}
+            onClick={() => setZoom(null)}
+          >
             <Maximize2 className="size-4" />
           </Button>
           <span className="bg-border mx-1 h-4 w-px" aria-hidden="true" />
           <Button
             variant="ghost"
             size="icon"
-            aria-label="在末尾添加空白页"
-            title="在末尾添加空白页"
+            aria-label={t("在末尾添加空白页")}
+            title={t("在末尾添加空白页")}
             onClick={() => setLayout(addPage(resume.layout))}
           >
             <FilePlus2 className="size-4" />
@@ -229,8 +236,8 @@ export function PreviewCanvas() {
           <Button
             variant="ghost"
             size="icon"
-            aria-label="移除末页并合并内容"
-            title="移除末页并合并内容"
+            aria-label={t("移除末页并合并内容")}
+            title={t("移除末页并合并内容")}
             disabled={resume.layout.length <= 1}
             onClick={() => setLayout(removePage(resume.layout, resume.layout.length - 1))}
           >
@@ -242,21 +249,24 @@ export function PreviewCanvas() {
           <div className="flex items-center gap-1.5 text-sm text-amber-600 dark:text-amber-500">
             <AlertTriangle className="size-4 shrink-0" />
             <span>
-              第 {overflow.map((o) => o.page).join("、")} 页内容超出{" "}
+              {t("第")}
+              {overflow.map((o) => o.page).join("、")} {t("页内容超出")}{" "}
               {overflow.reduce((sum, o) => sum + o.px, 0)}px
             </span>
           </div>
         ) : (
           <span className="text-muted-foreground text-xs">
-            {resume.metadata.page.format.toUpperCase()} · {resume.layout.length} 页 · 实时预览
+            {resume.metadata.page.format.toUpperCase()} · {resume.layout.length}{" "}
+            {t("页 · 实时预览")}
           </span>
         )}
       </div>
 
       {layoutMode && (
         <p className="workspace-note border-b bg-teal-50 px-4 py-2 text-xs text-teal-900">
-          外层虚线 = 区块，内层虚线 = 字段，浅色竖线 = 12 格。悬停字段查看占格数与 ↵ 换行规则。
-          拖动六点手柄可移动区块；在「字段排版 · 12 格」中调整字段。辅助线不参与排版，也不会导出。
+          {t(
+            "外层虚线 = 区块，内层虚线 = 字段，浅色竖线 = 12 格。悬停字段查看占格数与 ↵ 换行规则。 拖动六点手柄可移动区块；在「字段排版 · 12 格」中调整字段。辅助线不参与排版，也不会导出。",
+          )}
         </p>
       )}
 
@@ -290,8 +300,9 @@ export function PreviewCanvas() {
       </div>
       {unbreakablePages.length > 0 ? (
         <div className="workspace-note border-t bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:bg-amber-950/30 dark:text-amber-300">
-          第 {unbreakablePages.join("、")} 页有单一区块高于可用纸面，无法在区块中间自动断开；
-          请缩短该区块或调小字号/页边距。
+          {t("第")}
+          {unbreakablePages.join("、")}{" "}
+          {t("页有单一区块高于可用纸面，无法在区块中间自动断开； 请缩短该区块或调小字号/页边距。")}
         </div>
       ) : null}
     </div>

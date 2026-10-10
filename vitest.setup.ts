@@ -1,6 +1,11 @@
 import "@testing-library/jest-dom/vitest";
-import { afterEach, vi } from "vitest";
+import { afterEach, beforeEach, vi } from "vitest";
+import { setLanguage } from "@/lib/i18n";
 import { cleanup } from "@testing-library/react";
+// Existing fixture assertions cover Chinese; English coverage explicitly switches.
+beforeEach(() => {
+  setLanguage("zh-CN");
+});
 
 afterEach(() => {
   cleanup();
